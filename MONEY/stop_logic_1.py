@@ -4,9 +4,9 @@ import time
 
 def tp_sl_strategy_1_func(enter_price, current_price, qnt, defender):
    
-    depo = 100
+    depo = 200 # 20*10
     close_order = False
-    profit = 0 #USDT
+    profit = None #USDT
     sl_q = 0.00001
     tp_q = 0.000015
     qnt = depo/ enter_price

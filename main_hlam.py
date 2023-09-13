@@ -176,3 +176,286 @@
 #     import websockets
 #     import json
 #     asyncio.run(main())
+
+# import asyncio
+# import time
+# from API.bin_data_get import bin_data
+# from pparamss import my_params
+# from ENGIN.tv_signals_1 import get_orders_stek
+# from UTILS.waiting_candle import kline_waiter
+# from taskss import setup_tasks
+# import time
+# import asyncio 
+# from asynccc import shell_monitiringg
+# from ENGIN.tv_signals_1 import get_orders_stek
+# from pparamss import my_params
+# from API.bin_data_get import bin_data
+# import pytz
+# from datetime import datetime, time
+# stake_list_lock = asyncio.Lock()
+# current_stake_list = set()
+# profit_variable_lock = asyncio.Lock()
+# profit_list = []
+# # counter_variable_lock = asyncio.Lock()
+# # counter_var = 0
+
+# import websockets
+# import asyncio
+# import json
+# from MONEY.stop_logic_1 import tp_sl_strategy_1_func
+
+# async def price_monitoring(symbol, defender):
+#     url = f'wss://stream.binance.com:9443/ws/{symbol.lower()}@kline_1s'
+#     profit = None
+#     close_position = False
+#     qnt = 0.001
+#     first_price_flag = False
+
+#     while True:
+#         try:
+#             async with websockets.connect(url) as websocket:
+#                 async for message in websocket:
+#                     data = json.loads(message)
+#                     # print(f"{data['s']}:  {data['k']['c']}")
+#                     if not first_price_flag:
+#                         enter_price = float(data['k']['c'])
+#                         first_price_flag = True
+#                         continue
+#                     else:
+#                         current_price = float(data['k']['c'])
+#                         profit, close_position = tp_sl_strategy_1_func(enter_price, current_price, qnt, defender)
+
+#                         await asyncio.sleep(5)
+
+#                     if close_position:
+#                         return profit, symbol
+                    
+#         except websockets.exceptions.ConnectionClosed:
+#             print("Connection closed unexpectedly. Reconnecting...")
+#             await asyncio.sleep(7)  # Подождать перед повторной попыткой подключения
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
+#             await asyncio.sleep(7)
+#         finally:
+#             await websocket.close()
+#             break
+
+#     return profit, symbol
+
+# async def shell_monitiringg(symbol, defender):
+#     profit = None
+#     profit, symbol = await price_monitoring(symbol, defender)
+    
+#     return profit, symbol
+
+
+
+
+# def asum_counter(profitt):
+#     win_rate = sum([1 for x in profitt if x >0])
+#     lose_rate = sum([1 for x in profitt if x <0])
+#     total = sum(profitt)
+#     win_per = (win_rate * 100)/(win_rate + lose_rate)
+#     result = f"total: {total}$ \n win_per: {win_per}%"
+#     with open('result.txt', 'w') as txt_file:
+#         txt_file.write(result) 
+
+
+# async def tasks_controller(symbol, defender):
+#     profit = None
+#     next_stake = None
+#     symbol_to_remove = None
+
+#     while True:
+#         await asyncio.sleep(2)
+#         now = datetime.now()
+#         desired_timezone = pytz.timezone('Europe/Kiev')
+#         now_in_desired_timezone = now.astimezone(desired_timezone)
+#         current_time = now_in_desired_timezone.strftime('%H:%M')
+#         # print(current_time)
+
+#         if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
+#             print('it is time for rest!')
+#             async with profit_variable_lock:
+#                 asum_counter(profit_list)
+#                 break
+
+#         if symbol:
+#             try:
+#                 async with stake_list_lock:
+#                     current_stake_list.add(symbol)
+#                 profit, symbol_to_remove = await shell_monitiringg(symbol, defender)
+#                 if profit:
+#                     async with profit_variable_lock:
+#                         profit_list.append(profit)
+#                         if len(profit_list) >= 10:
+#                             asum_counter(profit_list)
+#                             break
+
+#                 print(f"tasks_19:___{profit}")
+#                 symbol = None
+#                 async with stake_list_lock:
+#                     try:
+#                         current_stake_list.remove(symbol_to_remove)
+#                         print(f"after_removing:___{current_stake_list}")                        
+#                     except Exception as ex:
+#                         print(ex)
+#             except Exception as ex:
+#                 print(ex)
+
+#         else:
+#             try:
+#                 top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins) 
+#                 next_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)
+#             except Exception as ex:
+#                 print(ex)
+#             if next_stake:
+#                 async with stake_list_lock: 
+#                     for symboll, defenderr in next_stake:                        
+#                         if (len(current_stake_list) < my_params.max_threads) and symboll not in current_stake_list:                                        
+#                             current_stake_list.add(symboll)
+#                             print(f"after_adding:___{current_stake_list}")
+#                             symbol, defender = symboll, defenderr                     
+#                             break
+#             else:
+#                 await asyncio.sleep(12)
+
+# async def setup_tasks(initial_stake):
+#     tasks = []
+   
+#     for symbol, defender in initial_stake:
+#         task = asyncio.create_task(tasks_controller(symbol, defender))
+#         tasks.append(task)
+    
+#     await asyncio.gather(*tasks)
+
+
+# # python -m taskss
+
+# async def main():
+#     # sys.exit()
+#     # loop = asyncio.get_event_loop()
+#     # loop.close()
+#     top_coins = None
+    
+#     try:
+#         top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
+#     except Exception as ex:
+#         print(f"main__15:\n{ex}")
+    
+#     # print(top_coins)
+    
+#     try:
+#         wait_time = kline_waiter(my_params.kline_time, my_params.time_frame)
+#         print(f"waiting time to close last candle is: {wait_time} sec")
+#         # await asyncio.sleep(wait_time)
+#     except Exception as ex:
+#         print(f"main__24:\n{ex}")
+    
+#     while True:
+#         try:
+#             first_stake = []
+#             first_added_stake = []
+#             first_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)            
+#             if first_stake:
+#                 break
+#             else:
+#                 await asyncio.sleep(5)
+#         except Exception as ex:
+#             print(f"main__39:\n{ex}")
+#     try:
+#         # first_stake = first_stake[:2]
+        
+#         if len(first_stake) > my_params.max_threads:
+#             first_stake = first_stake[:my_params.max_threads]
+        
+#         if len(first_stake) < my_params.max_threads:
+#             for _ in range(my_params.max_threads - len(first_stake)):
+#                 first_added_stake.append((None, None))
+#             first_stake += first_added_stake
+#         print(first_stake)
+#         await setup_tasks(first_stake)
+#     except Exception as ex:
+#         print(f"main__51:\n{ex}")
+    
+    
+#     print("The first_stake was launched successfully!")
+
+# if __name__ == "__main__":
+#     asyncio.run(main())
+
+
+    # streams = ['agldusdt@kline_1s', 'zecusdt@kline_1s', 'rndrusdt@kline_1s', 'iotxusdt@kline_1s', 'galusdt@kline_1s', 'runeusdt@kline_1s', 'trbusdt@kline_1s']
+
+            # except aiohttp.ClientError as e:
+            #     print(f"An error occurred: {e}")
+            #     await asyncio.sleep(7) 
+            #     continue 
+            # except ws.exceptions.ConnectionClosed:
+            #     print(f"An error occurred:...")
+            #     await asyncio.sleep(7)  
+            #     continue
+
+
+
+# async def price_monitoring(main_stake):
+#     url = f'wss://stream.binance.com:9443/stream?streams='
+#     profit = None
+#     close_position = False
+#     qnt = 0.001
+#     first_price_flag = False
+#     websocket = None
+#     # streams = [f'{item[0].lower()}@kline_1s' for item in main_stake]
+#     # print(streams)
+#     streams = ['agldusdt@kline_1s', 'zecusdt@kline_1s', 'rndrusdt@kline_1s', 'iotxusdt@kline_1s', 'galusdt@kline_1s', 'runeusdt@kline_1s', 'trbusdt@kline_1s']
+#     # return
+#     try:
+#         while True:
+#             try:
+#                 print('hi')
+#                 async with websockets.connect(url) as websocket:
+#                     subscribe_request = {
+#                         "method": "SUBSCRIBE",
+#                         "params": streams,
+#                         "id": 87
+#                     }
+
+#                     await websocket.send(json.dumps(subscribe_request))
+#                     await websocket.recv()
+                    
+#                     async for message in websocket:
+#                         data = json.loads(message)
+#                         print(data)
+#                         break 
+#                     break
+#                         # await asyncio.sleep(5)
+#                         # return
+#                         # print(f"{data['s']}:  {data['k']['c']}")
+#                         # if not first_price_flag:
+#                         #     enter_price = float(data['k']['c'])
+#                         #     first_price_flag = True
+#                         #     continue
+#                         # else:
+#                         #     current_price = float(data['k']['c'])
+#                         #     profit, close_position = tp_sl_strategy_1_func(enter_price, current_price, qnt, defender)
+
+#                         #     await asyncio.sleep(5)
+
+#                         # if close_position:
+#                             # return profit, symbol
+                        
+#             except websockets.exceptions.ConnectionClosed:
+#                 print("Connection closed unexpectedly. Reconnecting...")
+#                 await asyncio.sleep(7)  # Подождать перед повторной попыткой подключения
+#                 continue
+#             except Exception as e:
+#                 print(f"An error occurred: {e}")
+#                 await asyncio.sleep(7)
+#                 continue
+#     except:
+#         pass
+#     finally:
+#         await websocket.close()
+        
+
+    # return profit, symbol
