@@ -459,3 +459,91 @@
         
 
     # return profit, symbol
+
+
+
+# async def tasks_maneger(initial_stake):
+#     symbol, defender = initial_stake[0], initial_stake[1]
+#     profit = None
+#     next_stake = None
+#     symbol_to_remove = None
+
+#     while True:
+#         await asyncio.sleep(2)
+#         now = datetime.now()
+#         desired_timezone = pytz.timezone('Europe/Kiev')
+#         now_in_desired_timezone = now.astimezone(desired_timezone)
+#         current_time = now_in_desired_timezone.strftime('%H:%M')
+#         # print(current_time)
+
+#         if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
+#             print('it is time for rest!')
+#             async with profit_variable_lock:
+#                 asum_counter(profit_list)
+#                 break
+
+#         if symbol:
+#             try:
+#                 async with stake_list_lock:
+#                     current_stake_list.add(symbol)
+#                 profit, symbol_to_remove = await shell_monitiringg(symbol, defender)
+#                 if profit:
+#                     async with profit_variable_lock:
+#                         profit_list.append(profit)
+#                         if len(profit_list) >= 10:
+#                             asum_counter(profit_list)
+#                             break
+
+#                 print(f"tasks_19:___{profit}")
+#                 symbol = None
+#                 async with stake_list_lock:
+#                     try:
+#                         current_stake_list.remove(symbol_to_remove)
+#                         print(f"after_removing:___{current_stake_list}")                        
+#                     except Exception as ex:
+#                         print(ex)
+#             except Exception as ex:
+#                 print(ex)
+
+#         else:
+#             try:
+#                 top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins) 
+#                 next_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)
+#             except Exception as ex:
+#                 print(ex)
+#             if next_stake:
+#                 async with stake_list_lock: 
+#                     for symboll, defenderr in next_stake:                        
+#                         if (len(current_stake_list) < my_params.max_threads) and symboll not in current_stake_list:                                        
+#                             current_stake_list.add(symboll)
+#                             print(f"after_adding:___{current_stake_list}")
+#                             symbol, defender = symboll, defenderr                     
+#                             break
+#             else:
+#                 await asyncio.sleep(12)
+
+
+            # return
+
+
+            
+            # if len(first_stake) < my_params.max_threads:
+            #     for _ in range(my_params.max_threads - len(first_stake)):
+            #         first_added_stake.append((None, None))
+            #     first_stake += first_added_stake
+            # print(first_stake)
+
+    # loop = asyncio.get_event_loop()
+    # loop.close()
+
+            # # await asyncio.sleep(2)
+            # now = datetime.now()
+            # desired_timezone = pytz.timezone('Europe/Kiev')
+            # now_in_desired_timezone = now.astimezone(desired_timezone)
+            # current_time = now_in_desired_timezone.strftime('%H:%M')
+            # # print(current_time)
+            # if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
+            #     print('it is time to assuming!')
+            #     async with profit_variable_lock:
+            #         asum_counter(raport_list)
+            #         break

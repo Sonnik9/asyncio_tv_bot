@@ -4,6 +4,8 @@ from API.bin_data_get import bin_data
 from pparamss import my_params
 from ENGIN.tv_signals_1 import get_orders_stek
 from UTILS.waiting_candle import kline_waiter
+from MONEY.asumm import asum_counter
+from MONEY.stop_logic_1 import sl_tp_logic
 from ENGIN.tv_signals_1 import get_orders_stek
 from pparamss import my_params
 from API.bin_data_get import bin_data
@@ -13,96 +15,29 @@ from datetime import datetime, time
 import asyncio
 import aiohttp
 import json
-import sys
-from MONEY.stop_logic_1 import tp_sl_strategy_1_func
+# import sys
 
-# counter_variable_lock = asyncio.Lock()
-# counter_var = 0
-
-
-
-stake_list_lock = asyncio.Lock()
-current_stake_list = set()
-profit_variable_lock = asyncio.Lock()
-profit_list = []
-
-
-
-
-# async def tasks_maneger(initial_stake):
-#     symbol, defender = initial_stake[0], initial_stake[1]
-#     profit = None
-#     next_stake = None
-#     symbol_to_remove = None
-
-#     while True:
-#         await asyncio.sleep(2)
-#         now = datetime.now()
-#         desired_timezone = pytz.timezone('Europe/Kiev')
-#         now_in_desired_timezone = now.astimezone(desired_timezone)
-#         current_time = now_in_desired_timezone.strftime('%H:%M')
-#         # print(current_time)
-
-#         if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
-#             print('it is time for rest!')
-#             async with profit_variable_lock:
-#                 asum_counter(profit_list)
-#                 break
-
-#         if symbol:
-#             try:
-#                 async with stake_list_lock:
-#                     current_stake_list.add(symbol)
-#                 profit, symbol_to_remove = await shell_monitiringg(symbol, defender)
-#                 if profit:
-#                     async with profit_variable_lock:
-#                         profit_list.append(profit)
-#                         if len(profit_list) >= 10:
-#                             asum_counter(profit_list)
-#                             break
-
-#                 print(f"tasks_19:___{profit}")
-#                 symbol = None
-#                 async with stake_list_lock:
-#                     try:
-#                         current_stake_list.remove(symbol_to_remove)
-#                         print(f"after_removing:___{current_stake_list}")                        
-#                     except Exception as ex:
-#                         print(ex)
-#             except Exception as ex:
-#                 print(ex)
-
-#         else:
-#             try:
-#                 top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins) 
-#                 next_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)
-#             except Exception as ex:
-#                 print(ex)
-#             if next_stake:
-#                 async with stake_list_lock: 
-#                     for symboll, defenderr in next_stake:                        
-#                         if (len(current_stake_list) < my_params.max_threads) and symboll not in current_stake_list:                                        
-#                             current_stake_list.add(symboll)
-#                             print(f"after_adding:___{current_stake_list}")
-#                             symbol, defender = symboll, defenderr                     
-#                             break
-#             else:
-#                 await asyncio.sleep(12)
-
+# stake_list_lock = asyncio.Lock()
+# current_stake_list = set()
+# profit_variable_lock = asyncio.Lock()
+# profit_list = []
 
 async def price_monitoring(main_stake, data_callback):
-    url = f'wss://stream.binance.com:9443/stream?streams='
-    profit = None
-    close_position = False
-    first_iter = False
-    streams = []
-    streams = [f'{item[0].lower()}@kline_1s' for item in main_stake]
-
+    url = f'wss://stream.binance.com:9443/stream?streams='      
+    # streams = []
+    print(main_stake)
+    streams = [f"{k['symbol'].lower()}@kline_1s" for k in main_stake]
+    # print(streams)
+    # return
+        
     try:
         while True:   
             data_prep = None   
-            ws = None
-            data_list = []        
+            ws = None            
+            iterr_flag = False
+            intermedeate_data_list = []    
+            enter_list = []
+            new_formated_data = []    
             try:
                 print('hi')
                 async with aiohttp.ClientSession() as session:
@@ -110,27 +45,41 @@ async def price_monitoring(main_stake, data_callback):
                         subscribe_request = {
                             "method": "SUBSCRIBE",
                             "params": streams,
-                            "id": 87
+                            "id": 7
                         }
-            
-                        data_prep = await ws.send_json(subscribe_request)
-                        if not data_prep and first_iter:                            
+                        try:
+                            data_prep = await ws.send_json(subscribe_request)                            
+                        except:
+                            pass
+                   
+                        if not data_prep and iterr_flag:                                                
                             await asyncio.sleep(7)
-
-                        async for msg in ws:
-                            first_iter = True
+                            continue
+                        
+                        async for msg in ws:                            
                             if msg.type == aiohttp.WSMsgType.TEXT:
-                                try:
-                                    data = json.loads(msg.data)                            
-                                    symbol = data.get('data',{}).get('s')
-                                    close_price = float(data.get('data',{}).get('k',{}).get('c'))
-                                    data_list.append((symbol, close_price))
-                                except:                              
+                                try:                                    
+                                    data = json.loads(msg.data)                                                            
+                                    symbol = data.get('data',{}).get('s')                                    
+                                    close_price = float(data.get('data',{}).get('k',{}).get('c'))                                    
+                                    intermedeate_data_list.append((symbol, close_price))                                                        
+                                except:
                                     pass
 
-                                if len(data_list) == len(streams):
-                                    await data_callback(data_list, main_stake)
-                                    data_list = []
+                                if len(intermedeate_data_list) == len(streams):
+                                    if not iterr_flag:                                        
+                                        enter_list = intermedeate_data_list
+                                        iterr_flag = True
+                                        intermedeate_data_list = []
+                                        continue
+                                    new_formated_data = await data_callback(intermedeate_data_list, enter_list, main_stake)
+                                    intermedeate_data_list = []
+                                    # print(new_formated_data)           
+                                    main_stake = sl_tp_logic(new_formated_data)
+                                    
+                                    # await asyncio.sleep(5)
+                                    if main_stake:
+                                        return main_stake
 
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -140,24 +89,51 @@ async def price_monitoring(main_stake, data_callback):
         pass
     finally:
         await ws.close()
-        return profit, close_position
+        return main_stake
 
-async def process_data(data_list, main_stake):
-    formated_price_list = []
-    for symbol, close_price in data_list:
+async def process_data(data_list, enter_list, main_stake):
+    formated_data = []
+    new_formated_data = []
+
+    for symbol, current_price in data_list:  
         for s, d in main_stake:
             if symbol==s:
-                formated_price_list.append((symbol, d, close_price))
+                formated_data.append((symbol, d, current_price))
+                break
+    for symboll, enter_pr in enter_list:
+        for symbo, deff, cur_pr in formated_data:
+            if symboll == symbo:
+                new_formated_data.append((symboll, enter_pr, cur_pr, deff))
                 break
     
-    print(formated_price_list)
-    print('/'*100)
+    # print(new_formated_data)
+    # print(formated_data)
+    # print('/'*100)
+    return new_formated_data
+
+def stake_generator(usual_defender_stake):
+    universal_stake = [
+        {
+            "profit": None,
+            "symbol": s,
+            "defender": d,
+            "enter_price": None,
+            "current_price": None,
+            "in_position": False,
+            "close_order": False
+        }
+            for s, d in usual_defender_stake
+    ] 
+
+    return universal_stake
 
 async def main():
-    # sys.exit()
-    # loop = asyncio.get_event_loop()
-    # loop.close()
-    top_coins = None    
+    first_flag = True
+    top_coins = None  
+    usual_defender_stake = None 
+    total_raport_list = [] 
+    intermedeate_raport_list = [] 
+
     try:
         top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
     except Exception as ex:
@@ -172,33 +148,55 @@ async def main():
     
     while True:
         try:
-            first_stake = []            
-            first_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)            
-            if first_stake:
+            # await asyncio.sleep(2)
+            now = datetime.now()
+            desired_timezone = pytz.timezone('Europe/Kiev')
+            now_in_desired_timezone = now.astimezone(desired_timezone)
+            current_time = now_in_desired_timezone.strftime('%H:%M')
+            print(current_time)
+            if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
+                print('it is time to assuming!')                
+                asum_counter(total_raport_list)
                 break
-            else:
+            try:
+                usual_defender_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)
+            except Exception as ex:
+                print(ex) 
+
+            if not usual_defender_stake:
                 await asyncio.sleep(5)
+                continue
+
+            if first_flag:                              
+                if len(usual_defender_stake) > my_params.max_threads:
+                    usual_defender_stake = usual_defender_stake[:my_params.max_threads]
+                universal_stake = stake_generator(usual_defender_stake)
+                main_stake = universal_stake
+                first_flag = False  
+            else:
+                decimal = my_params.max_threads - len(main_stake)
+                if len(usual_defender_stake) > decimal:
+                    usual_defender_stake = usual_defender_stake[:decimal]
+                universal_stake = stake_generator(usual_defender_stake)
+                main_stake = main_stake + universal_stake
+              
+            # ///////////////////////////////////////////////////////////////////////
+            try:
+                main_stake = await price_monitoring(main_stake, process_data)
+                if main_stake:                         
+                    intermedeate_raport_list = [x for x in main_stake if x["close_order"]] 
+                    total_raport_list += intermedeate_raport_list
+                    main_stake = [x for x in main_stake if not x["close_order"]]
+                # break
+            except Exception as ex:
+                print(f"main__192:\n{ex}")         
+
         except Exception as ex:
-            print(f"main__39:\n{ex}")
+            print(f"main__195:\n{ex}")
             await asyncio.sleep(5)
-    try:
-        # first_stake = first_stake[:2]
-        first_added_stake = []
-        
-        if len(first_stake) > my_params.max_threads:
-            first_stake = first_stake[:my_params.max_threads]
-        
-        # if len(first_stake) < my_params.max_threads:
-        #     for _ in range(my_params.max_threads - len(first_stake)):
-        #         first_added_stake.append((None, None))
-        #     first_stake += first_added_stake
-        print(first_stake)
-        await price_monitoring(first_stake, process_data)
-    except Exception as ex:
-        print(f"main__51:\n{ex}")
+   
     
-    
-    print("The first_stake was launched successfully!")
+    print("There was a good!")
 
 if __name__ == "__main__":
     asyncio.run(main())
