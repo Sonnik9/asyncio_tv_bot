@@ -1,12 +1,14 @@
 import asyncio
-import time
+# import time
 from API.bin_data_get import bin_data
 from pparamss import my_params
-from ENGIN.tv_signals_1 import get_orders_stek
+from ENGIN.main_strategy_controller import main_strategy_control_func
+   
 from UTILS.waiting_candle import kline_waiter
+from UTILS.indicators import calculate_atr
+from UTILS.calc_qnt import calc_qnt_func
 from MONEY.asumm import asum_counter
-from MONEY.stop_logic_1 import sl_tp_logic
-from ENGIN.tv_signals_1 import get_orders_stek
+from MONEY.stop_logic import sl_strategies
 from pparamss import my_params
 from API.bin_data_get import bin_data
 import pytz
@@ -15,7 +17,7 @@ from datetime import datetime, time
 import asyncio
 import aiohttp
 import json
-# import sys
+import sys
 
 # stake_list_lock = asyncio.Lock()
 # current_stake_list = set()
@@ -113,7 +115,7 @@ async def process_data(intermediate_data_list, enter_price_list, main_stake):
     main_stake = list(symbol_to_item.values())
 
     try:
-        main_stake, profit_flag = sl_tp_logic(main_stake)
+        main_stake, profit_flag = sl_strategies.sl_controller(main_stake)
     except Exception as ex:
         print(f"125:__{ex}")
 
@@ -142,12 +144,16 @@ async def main():
     total_raport_list = [] 
     intermedeate_raport_list = [] 
     main_stake_symbols_list = []
+    recalculated_depo = None
 
     try:
         top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
     except Exception as ex:
         print(f"main__15:\n{ex}")    
-    # print(top_coins)    
+    # print(top_coins) 
+
+
+    # sys.exit() 
     try:
         wait_time = kline_waiter(my_params.kline_time, my_params.time_frame)
         print(f"waiting time to close last candle is: {wait_time} sec")
@@ -158,7 +164,7 @@ async def main():
     while True:
         try:
             # await asyncio.sleep(2)
-            if len(total_raport_list) >= 200:
+            if len(total_raport_list) >= 10:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
                 break
@@ -172,8 +178,10 @@ async def main():
             #     print('it is time to assuming!')                
             #     asum_counter(total_raport_list)
             #     break
+
+
             try:
-                usual_defender_stake = get_orders_stek.get_tv_signals(top_coins, my_params.interval)
+                usual_defender_stake = main_strategy_control_func(top_coins)
                 usual_defender_stake = [x for x in usual_defender_stake if x[0] not in main_stake_symbols_list]
             except Exception as ex:
                 print(ex) 
@@ -194,9 +202,24 @@ async def main():
                     usual_defender_stake = usual_defender_stake[:decimal]
                 universal_stake = stake_generator(usual_defender_stake)
                 main_stake = main_stake + universal_stake
+
+
+
               
             # ///////////////////////////////////////////////////////////////////////
             try:
+                try:
+                    # print(main_stake)
+                    main_stake = bin_data.get_klines(main_stake)
+                    for item in main_stake:
+                        item["atr"] = calculate_atr(item["klines"])
+                        item["qnt"], recalculated_depo = calc_qnt_func(item, my_params.depo)
+                        # print(recalculated_depo)
+                        del item["klines"]
+                    # print(main_stake)
+                except Exception as ex:
+                    print(f"main__15:\n{ex}") 
+                # sys.exit()
                 main_stake = await price_monitoring(main_stake, process_data)
                 if main_stake:                         
                     intermedeate_raport_list = [x for x in main_stake if x["close_order"]] 

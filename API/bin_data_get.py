@@ -1,8 +1,7 @@
 from API.config import Configg
 import time
 from pparamss import my_params
-
-
+import pandas as pd
 
 class GET_BINANCE_DATA(Configg):
 
@@ -67,4 +66,35 @@ class GET_BINANCE_DATA(Configg):
         
         return symbols
     
+    def get_klines(self, main_stake):
+        klines = None
+        # data = None
+        # if not test_flag:
+        for item in main_stake:
+            symbol = item["symbol"]
+            # print(symbol)
+            for _ in range(3):
+                try:
+                    if self.market == 'spot':
+                        klines = self.spot_client.get_klines(symbol=symbol, interval=my_params.interval, limit=15)
+                    elif self.market == 'futures':
+                        klines = self.futures_client.klines(symbol=symbol, interval=my_params.interval, limit=15)
+                    time.sleep(0.1)
+                    break
+                except Exception as ex:
+                    print(f"API/get_data_13:___{ex}")
+                    time.sleep(2)
+                    continue  
+
+            if klines:
+                item['klines'] = pd.DataFrame(klines).iloc[:, :6]
+                item['klines'].columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
+                item['klines'] = item['klines'].set_index('Time')
+                item['klines'].index = pd.to_datetime(item['klines'].index, unit='ms')
+                item['klines'] = item['klines'].astype(float)
+
+        return main_stake
+
+# python -m API.get_data
+#     
 bin_data = GET_BINANCE_DATA(my_params.market, my_params.test_flag)

@@ -1,6 +1,6 @@
 
 def asum_counter(total_raport_list):
-    print(total_raport_list)
+    # print(total_raport_list)
     profitt = [x['profit'] for x in total_raport_list]
     win_rate = sum([1 for x in profitt if x >0])
     lose_rate = sum([1 for x in profitt if x <0])

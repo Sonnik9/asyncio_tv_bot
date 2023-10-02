@@ -8,7 +8,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV "/home/kali/Desktop/all_proj/TREADING/asyncio_tv_bot/.venv"
+setenv VIRTUAL_ENV "/home/kali/Desktop/ALL_PROJECT/TREADING/TV-BOT_2/.venv"
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/bin:$PATH"

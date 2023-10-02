@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/kali/Desktop/all_proj/TREADING/asyncio_tv_bot/.venv"
+set -gx VIRTUAL_ENV "/home/kali/Desktop/ALL_PROJECT/TREADING/TV-BOT_2/.venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
