@@ -1,50 +1,31 @@
-# from tradingview_ta import TA_Handler, Interval, Exchange
 from tradingview_ta import *
 from pparamss import my_params
 
-class TV_STRONG_SIGNALS():
+def sigmals_handler_one(all_coins_indicators):
+    orders_stek = []
+    recommendation = None
+    indicator = None
 
-    def __init__(self)-> None:
-        pass
-
-    def get_tv_signals(self, top_coins, interval):
-        all_coins_indicators = None
-        orders_stek = None
-        symbols = [f"BINANCE:{x}" for x in top_coins if x]
-
-        all_coins_indicators = get_multiple_analysis(symbols=symbols,
-                            screener='crypto',                    
-                            interval=interval)
-        # print(all_coins_indicators)
-        try:
-            orders_stek = self.sigmals_analizator(all_coins_indicators)
+    for _, item in all_coins_indicators.items():
+        try:            
+            # print(item.oscillators)
+            # print(item.indicators)
+            indicator = item.symbol
+            recommendation = item.summary["RECOMMENDATION"]
         except Exception as ex:
-            print(ex)
-
-        return orders_stek
-
-    def sigmals_analizator(self, all_coins_indicators):
-        orders_stek = []
-        recommendation = None
-        indicator = None
-        for _, item in all_coins_indicators.items():
+            pass
+            # print(ex)
+        if recommendation == 'STRONG_BUY':
             try:
-                indicator = item.symbol
-                recommendation = item.summary["RECOMMENDATION"]
-            except Exception as ex:
+                orders_stek.append((indicator, 1))          
+            except:
                 pass
-            if recommendation == 'STRONG_BUY':   
-                # print(recommendation)
-                try:
-                    orders_stek.append((indicator, 1))          
-                except:
-                    pass
-            elif recommendation == 'STRONG_SELL':  
-                try:          
-                    orders_stek.append((indicator, -1))             
-                except:
-                    pass
+        elif recommendation == 'STRONG_SELL':  
+            try:          
+                orders_stek.append((indicator, -1))             
+            except:
+                pass
 
-        return orders_stek 
+    return orders_stek 
 
-get_orders_stek_1 = TV_STRONG_SIGNALS()
+

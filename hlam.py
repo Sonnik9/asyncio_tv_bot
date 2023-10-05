@@ -989,3 +989,548 @@
     #     method = 'GET'
     #     params = {}
 
+# from tradingview_ta import TA_Handler, Interval, Exchange
+
+
+# from UTILS import indicators
+# from API.bin_data_get import bin_data
+# from pparamss import my_params
+
+# class IND_STR_TWO():
+
+#     def __init__(self) -> None:
+#         pass
+
+#     def bunch_handler_func(self, next_data, close_price, current_bunch):
+#         b_bband_q, s_bband_q, b_rsi_lev, s_rsi_lev, b_macd__q, s_macd_q, b_stoch_q, s_stoch_q = 1, 1, 33, 67, 1, 1, 23, 77
+
+#         signals_sum = []
+#         buy_signals_counter = 0
+#         sell_signals_counter = 0
+#         buy_total_signal, sell_total_signal = False, False
+
+#         if 'bband_flag' in current_bunch:
+#             upper, lower = indicators.calculate_bollinger_bands(next_data)        
+#             buy_bband_signal = close_price >= lower * b_bband_q
+#             sell_bband_signal = close_price <= upper * s_bband_q
+#             signals_sum.append((buy_bband_signal, sell_bband_signal))
+
+#         if 'macd_strong_flag' in current_bunch:
+#             macd, signal = indicators.calculate_macd(next_data)        
+#             buy_strong_macd_signal = (macd > signal * b_macd__q) & (macd < 0)
+#             sell_strong_macd_signal = (macd < signal * s_macd_q) & (macd > 0)
+#             signals_sum.append((buy_strong_macd_signal, sell_strong_macd_signal))
+
+#         if 'macd_lite_flag' in current_bunch:
+#             macd, signal = indicators.calculate_macd(next_data)        
+#             buy_lite_macd_signal = macd > signal * b_macd__q
+#             sell_lite_macd_signal = macd < signal * s_macd_q
+#             signals_sum.append((buy_lite_macd_signal, sell_lite_macd_signal))
+
+#         if 'rsi_flag' in current_bunch:
+#             rsi = indicators.calculate_rsi(next_data)        
+#             buy_rsi_signal = rsi <= b_rsi_lev
+#             sell_rsi_signal = rsi >= s_rsi_lev
+#             signals_sum.append((buy_rsi_signal, sell_rsi_signal))
+
+#         if 'stoch_flag' in current_bunch:
+#             fastk, slowk = indicators.calculate_stochastic_oscillator(next_data)        
+#             buy_stoch_signal = (fastk > slowk) & (fastk < b_stoch_q)
+#             sell_stoch_signal = (fastk < slowk) & (fastk > s_stoch_q)
+#             signals_sum.append((buy_stoch_signal, sell_stoch_signal))
+
+#         if 'engulfing_flag' in current_bunch:
+#             engulfing = indicators.calculate_engulfing_patterns(next_data)
+            
+#             buy_engulfing_signal = engulfing > 0
+#             sell_engulfing_signal = engulfing < 0
+#             signals_sum.append((buy_engulfing_signal, sell_engulfing_signal))
+
+#         if 'doji_flag' in current_bunch:
+#             doji = indicators.calculate_doji(next_data)
+            
+#             buy_doji_signal = doji != 0
+#             sell_doji_signal = doji != 0
+#             signals_sum.append((buy_doji_signal, sell_doji_signal))
+
+#         for buy_signal, sell_signal in signals_sum:
+#             if buy_signal:
+#                 buy_signals_counter += 1
+#             if sell_signal:
+#                 sell_signals_counter += 1
+
+#         if 'U' in current_bunch:
+#             if buy_signals_counter == len(signals_sum):
+#                 buy_total_signal = True 
+#         if 'D':
+#             if sell_signals_counter == len(signals_sum):
+#                 sell_total_signal = True
+#         if 'F' in current_bunch:
+#             if buy_signals_counter == len(signals_sum):
+#                 buy_total_signal = True 
+#             if sell_signals_counter == len(signals_sum):
+#                 sell_total_signal = True
+
+#         return buy_total_signal, sell_total_signal
+
+#     def trends_defender(self, next_data, close_price):
+#         try:
+#             adx = indicators.calculate_adx(next_data)        
+#             sma = indicators.calculate_sma(next_data)        
+#         except Exception as ex:
+#             print(ex)
+#         if close_price > sma and adx > 25:
+#             return "U"
+
+#         elif close_price < sma and adx > 25:
+#             return "D"
+#         else:
+#             return "F"
+
+#     def signal_gen(self, coin): 
+#         try:
+#             klines = bin_data.get_klines(coin)
+            
+#             next_data, close_price = klines, klines["Close"].iloc[-1]
+#             # print(close_price)
+#         except:
+#             return "neutral"
+#         bunch_variant = 2   
+        
+#         buy_signal, sell_signal = False, False
+#         trende_sign = self.trends_defender(next_data, close_price)
+                    
+#         if trende_sign == 'U':
+#             current_bunch = ['bband_flag', 'macd_lite_flag', 'engulfing_flag', 'U']
+#         if trende_sign == 'D':
+#             current_bunch = ['bband_flag', 'macd_lite_flag', 'engulfing_flag', 'D']
+            
+#         if trende_sign == 'F':
+#             if bunch_variant == 2:
+#                 current_bunch = ['macd_lite_flag', 'stoch_flag', 'F']
+
+#         buy_signal, sell_signal = self.bunch_handler_func(next_data, close_price, current_bunch)
+
+#         if buy_signal:
+#             return 1
+#         elif sell_signal:
+#             return 2
+#         else:
+#             return "neutral"
+            
+#     def get_udf_strategy_signals(self, top_coins):
+#         usual_defender_stake = []
+#         for coin in top_coins:
+#             defender = self.signal_gen(coin)
+#             print(defender)
+#             if defender != "neutral":
+#                 # print(defender)
+#                 usual_defender_stake.append((coin, defender))
+#             if len(usual_defender_stake) == my_params.max_threads:
+#                 break 
+
+#         return usual_defender_stake
+
+
+
+       
+
+# get_orders_stek_2 = IND_STR_TWO()
+
+
+
+
+
+# import talib
+
+# def calculate_adx(data, period=14):
+#     adx = None
+#     try:
+#         adx = talib.ADX(data['High'], data['Low'], data['Close'], timeperiod=period)
+#         adx = adx.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"34 indicatorss:___{ex}")
+#     return adx
+
+# def calculate_sma(data, period=20):
+#     sma = None
+#     num_std = 2
+#     try:
+#         _, sma, _ = talib.BBANDS(data['Close'], timeperiod=period, nbdevup=num_std, nbdevdn=num_std)
+#         sma = sma.to_numpy()[-1]
+#     except Exception as ex:
+#         print(ex)
+#     return sma
+
+# def calculate_bollinger_bands(data, period=20, num_std=2):
+#     upper_band, _, lower_band = None, None, None
+#     try:
+#         upper_band, _, lower_band = talib.BBANDS(data['Close'], timeperiod=period, nbdevup=num_std, nbdevdn=num_std)
+#         upper_band = upper_band.to_numpy()[-1]
+#         lower_band = lower_band.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_bollinger_bands: {ex}")
+#     return upper_band, lower_band
+
+# def calculate_rsi(data, period=14):
+#     rsi = None
+#     try:
+#         rsi = talib.RSI(data['Close'], timeperiod=period)
+#         rsi.interpolate(method='linear', inplace=True)
+#         rsi = rsi.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_rsi: {ex}")
+#     return rsi
+
+# def calculate_macd(data, fast_period=12, slow_period=26, signal_period=9):
+#     macd, signal = None, None
+#     try:
+#         macd, signal, _ = talib.MACD(data['Close'], fastperiod=fast_period, slowperiod=slow_period, signalperiod=signal_period)
+#         macd = macd.to_numpy()[-1]
+#         signal = signal.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_macd: {ex}")
+#     return macd, signal
+
+# # def calculate_atr(data, period=14):
+# #     atr = None
+# #     try:
+# #         atr = talib.ATR(data['High'], data['Low'], data['Close'], timeperiod=period)
+# #         atr = atr.to_numpy()[-1]
+# #         # atr = atr[-1]
+# #     except Exception as ex:
+# #         print(f"Error in calculate_atr: {ex}")
+# #     return atr
+
+# def calculate_engulfing_patterns(data):
+#     engulfing = None
+#     try:
+#         engulfing = talib.CDLENGULFING(data['Open'], data['High'], data['Low'], data['Close'])
+#         engulfing = engulfing.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_engulfing_patterns: {ex}")
+#     return engulfing
+
+# def calculate_doji(data):
+#     doji = None
+#     try:
+#         doji = talib.CDLDOJI(data['Open'], data['High'], data['Low'], data['Close'])
+#         doji = doji.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_doji: {ex}")
+#     return doji
+
+# def calculate_stochastic_oscillator(data, k_period=14, d_period=3):
+#     slow_k, slow_d = None, None
+#     try:
+#         slow_k, slow_d = talib.STOCH(data['High'], data['Low'], data['Close'], fastk_period=k_period, slowk_period=k_period, slowd_period=d_period)
+#         slow_k = slow_k.to_numpy()[-1]
+#         slow_d = slow_d.to_numpy()[-1]
+#     except Exception as ex:
+#         print(f"Error in calculate_stochastic_oscillator: {ex}")
+#     return slow_k, slow_d
+
+
+# def calculate_atr(data, period=14):
+#     true_ranges = []
+
+#     for i in range(1, len(data)):
+#         high = data['High'].iloc[i]
+#         low = data['Low'].iloc[i]
+#         close = data['Close'].iloc[i - 1]
+
+#         true_range = max(high - low, abs(high - close), abs(low - close))
+#         true_ranges.append(true_range)
+
+#     atr = sum(true_ranges[:period]) / period
+#     # print(atr)
+
+#     # for i in range(period, len(data)):
+#     #     atr = ((atr * (period - 1)) + true_ranges[i]) / period
+#     # print(atr)
+
+#     return atr
+
+    
+    # def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt):
+    #         profit = None
+    #         self.s_l = 0.04
+    #         # print(defender, enter_price, current_price, atr, qnt)
+
+    #         if defender == 1: 
+    #             self.checkpoint = enter_price*(1 + self.counter/100)
+    #             self.tralling_s_l = enter_price + ((self.checkpoint - enter_price)/2)
+    #             if current_price > enter_price:
+    #                 if current_price >= self.checkpoint:
+    #                     self.tralling_flag = True
+    #                     self.counter += 1
+    #                     if self.counter == 2:
+    #                         self.counter = 0
+    #                         # print('realy i am here')
+    #                         self.tralling_flag = False
+    #                         profit = (current_price - enter_price)*qnt
+    #                         return True, profit                   
+    #                 if (current_price <= self.tralling_s_l) and self.tralling_flag:
+    #                     self.counter = 0
+    #                     # print('hi2')
+    #                     self.tralling_flag = False
+    #                     profit = (current_price - enter_price)*qnt
+    #                     return True, profit  
+
+    #             elif current_price < enter_price:
+    #                 if current_price <= enter_price - atr*self.s_l:
+    #                     # print('hi3')
+    #                     self.counter = 0
+    #                     self.tralling_flag = False
+    #                     profit = (current_price - enter_price)*qnt
+    #                     return True, profit
+                    
+    #         if defender == -1: 
+    #             self.checkpoint = enter_price*(1 - self.counter/100)
+    #             self.tralling_s_l = enter_price - ((enter_price - self.checkpoint)/2)
+    #             if current_price < enter_price:
+    #                 if current_price <= self.checkpoint:
+    #                     self.tralling_flag = True
+    #                     self.counter += 1
+    #                     if self.counter == 2:
+    #                         self.counter = 0
+    #                         # print('realy i am here')
+    #                         self.tralling_flag = False
+    #                         profit = (enter_price - current_price)*qnt
+    #                         return True, profit                 
+    #                 if (current_price >= self.tralling_s_l) and self.tralling_flag:
+    #                     self.counter = 0
+    #                     # print('hi2')
+    #                     self.tralling_flag = False
+    #                     profit = (enter_price - current_price)*qnt
+    #                     return True, profit  
+
+    #             elif current_price > enter_price:                        
+    #                 if current_price >= enter_price + atr*self.s_l:
+    #                     # print('hi3')
+    #                     self.counter = 0
+    #                     self.tralling_flag = False
+    #                     profit = (enter_price - current_price)*qnt
+    #                     return True, profit
+                    
+    #         return False, profit 
+
+
+
+# class SL_STRATEGYYY():
+#     def __init__(self, sl_strategy_number, depo) -> None:
+#         self.sl_strategy_number = sl_strategy_number 
+#         self.depo = depo
+#         self.t_p = None
+#         self.s_l = None
+#         self.trailing_s_l = None
+#         self.counter = 1
+#         self.tralling_flag = False
+#         self.checkpoint = None
+#         self.atr_period = 14  # Период для расчета ATR
+#         self.atr_multiplier = 2.0  # Множитель для определения ATR-базированного трейлинг-стопа
+
+#     # ... другие методы ...
+
+#     def calculate_trailing_stop(self, defender, enter_price, current_price, atr):
+#         trailing_stop = None
+
+#         if defender == 1:
+#             self.checkpoint = enter_price * (1 + (self.counter * (atr/10)))
+#             trailing_stop = enter_price - atr * self.atr_multiplier
+
+#             if current_price >= self.checkpoint:
+#                 self.tralling_flag = True
+#                 self.counter += 1
+#                 if self.counter == 2:
+#                     self.counter = 0
+#                     self.tralling_flag = False
+#             elif current_price <= trailing_stop and self.tralling_flag:
+#                 self.counter = 0
+#                 self.tralling_flag = False
+
+#         elif defender == -1:
+#             self.checkpoint = enter_price * (1 - (self.counter * (atr/10)))
+#             trailing_stop = enter_price + atr * self.atr_multiplier
+
+#             if current_price <= self.checkpoint:
+#                 self.tralling_flag = True
+#                 self.counter += 1
+#                 if self.counter == 2:
+#                     self.counter = 0
+#                     self.tralling_flag = False
+#             elif current_price >= trailing_stop and self.tralling_flag:
+#                 self.counter = 0
+#                 self.tralling_flag = False
+
+#         return trailing_stop
+
+#     def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt):
+#         profit = None
+#         self.s_l = 0.01
+
+#         trailing_stop = self.calculate_trailing_stop(defender, enter_price, current_price, atr)
+
+#         if defender == 1:
+#             if current_price <= trailing_stop:
+#                 profit = (current_price - enter_price) * qnt
+#                 return True, profit
+#         elif defender == -1:
+#             if current_price >= trailing_stop:
+#                 profit = (enter_price - current_price) * qnt
+#                 return True, profit
+
+#         return False, profit
+    
+
+
+#     def sl_strategy_one(self, defender, enter_price, current_price, qnt): 
+#         profit = None
+#         self.t_p = 0.0015
+#         self.s_l = 0.001
+#         # self.t_p = 0.015
+#         # self.s_l = 0.007
+
+#         if defender == 1:             
+#             if current_price >= enter_price + enter_price*self.t_p:
+#                 profit = (current_price - enter_price)*qnt
+#                 return True, profit
+#             if current_price <= enter_price - enter_price*self.s_l:
+#                 profit = (current_price - enter_price)*qnt
+#                 return True, profit
+#         if defender == -1:                
+#             if current_price <= enter_price - enter_price*self.t_p:
+#                 profit = (enter_price - current_price)*qnt
+#                 return True, profit
+#             if current_price >= enter_price + enter_price*self.s_l:
+#                 profit = (enter_price - current_price)*qnt
+#                 return True, profit
+
+#         return False, profit
+        
+#     def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt):
+#             profit = None
+#             self.s_l = 0.01
+#             # print(defender, enter_price, current_price, atr, qnt)
+
+#             if defender == 1: 
+#                 self.checkpoint = enter_price*(1 + self.counter/100)
+#                 self.tralling_s_l = enter_price + ((self.checkpoint - enter_price)/2)
+#                 if current_price > enter_price:
+#                     if current_price >= self.checkpoint:
+#                         self.tralling_flag = True
+#                         self.counter += 1
+#                         if self.counter == 2:
+#                             self.counter = 0
+#                             # print('realy i am here')
+#                             self.tralling_flag = False
+#                             profit = (current_price - enter_price)*qnt
+#                             return True, profit                   
+#                     if (current_price <= self.tralling_s_l) and self.tralling_flag:
+#                         self.counter = 0
+#                         # print('hi2')
+#                         self.tralling_flag = False
+#                         profit = (current_price - enter_price)*qnt
+#                         return True, profit  
+#                     # if (current_price <= self.tralling_s_l):
+#                     #     self.counter = 0
+#                     #     print('hi4')
+#                     #     self.tralling_flag = False
+#                     #     profit = (current_price - enter_price)*qnt
+#                     #     return True, profit  
+#                 elif current_price < enter_price:
+#                     if current_price <= enter_price - atr*self.s_l:
+#                         # print('hi3')
+#                         self.counter = 0
+#                         self.tralling_flag = False
+#                         profit = (current_price - enter_price)*qnt
+#                         return True, profit
+                    
+#             if defender == -1: 
+#                 self.checkpoint = enter_price*(1 - self.counter/100)
+#                 self.tralling_s_l = enter_price - ((enter_price - self.checkpoint)/2)
+#                 if current_price < enter_price:
+#                     if current_price <= self.checkpoint:
+#                         self.tralling_flag = True
+#                         self.counter += 1
+#                         if self.counter == 2:
+#                             self.counter = 0
+#                             # print('realy i am here')
+#                             self.tralling_flag = False
+#                             profit = (enter_price - current_price)*qnt
+#                             return True, profit                 
+#                     if (current_price >= self.tralling_s_l) and self.tralling_flag:
+#                         self.counter = 0
+#                         # print('hi2')
+#                         self.tralling_flag = False
+#                         profit = (enter_price - current_price)*qnt
+#                         return True, profit  
+#                     # if (current_price >= self.tralling_s_l):
+#                     #     self.counter = 0
+#                     #     print('hi4')
+#                     #     self.tralling_flag = False
+#                     #     profit = (enter_price - current_price)*qnt
+#                     #     return True, profit  
+
+#                 elif current_price > enter_price:                        
+#                     if current_price >= enter_price + atr*self.s_l:
+#                         # print('hi3')
+#                         self.counter = 0
+#                         self.tralling_flag = False
+#                         profit = (enter_price - current_price)*qnt
+#                         return True, profit
+                    
+#             return False, profit
+    
+#     def sl_strategy_three(self, defender, enter_price, current_price, atr, qnt):
+#         profit = None
+#         self.t_p = 0.015
+#         self.s_l = 0.007
+#         self.t_p = 0.0015
+#         self.s_l = 0.001
+        
+#         if defender == 1:                
+#             if current_price >= enter_price + atr*self.t_p:
+#                 profit = (current_price - enter_price)*qnt
+#                 return True, profit
+#             if current_price <= enter_price - atr*self.s_l:
+#                 profit = (current_price - enter_price)*qnt
+#                 return True, profit
+            
+#         if defender == -1:                
+#             if current_price <= enter_price - atr*self.t_p:
+#                 profit = (enter_price - current_price)*qnt
+#                 return True, profit
+#             if current_price >= enter_price + atr*self.s_l:
+#                 profit = (enter_price - current_price)*qnt
+#                 return True, profit
+
+#         return False, profit
+
+# def serialize_analysis(obj):
+#     if isinstance(obj, datetime):
+#         return obj.isoformat()
+#     return obj.__dict__
+
+    # for key, item in all_coins_indicators.items():
+    #     print(f"Symbol: {item.symbol}")
+    #     for indicator, value in item.summary.items():
+    #         print(f"{indicator}: {value}")
+    #     print()
+    # for key, item in all_coins_indicators.items():
+    #     # Преобразование индикатора в формат JSON
+    #     indicator_json = json.dumps(item, default=serialize_analysis, indent=4)
+        
+    #     # Вывод красиво отформатированного индикатора
+    #     print(f"Indicator: {key}")
+    #     print(indicator_json)
+    #     print("-" * 40)
+
+
+    # {'Recommend.Other': -0.09090909, 'Recommend.All': -0.17878788, 'Recommend.MA': -0.26666667, 'RSI': 44.81125255, 'RSI[1]': 43.29762683, 'Stoch.K': 28.66705173, 'Stoch.D': 23.56146293, 'Stoch.K[1]': 23.80927336, 'Stoch.D[1]': 23.33301146, 'CCI20': -81.05682515, 'CCI20[1]': -89.18811541, 'ADX': 18.44619353, 'ADX+DI': 21.95399191, 'ADX-DI': 17.70659088, 'ADX+DI[1]': 22.91660192, 'ADX-DI[1]': 18.48296638, 'AO': -0.01047176, 'AO[1]': -0.00950353, 'Mom': -0.0045, 'Mom[1]': -0.0059, 'MACD.macd': -0.00253777, 'MACD.signal': -0.00153735, 'Rec.Stoch.RSI': 0, 'Stoch.RSI.K': 23.33070184, 'Rec.WR': 0, 'W.R': -65.56603774, 'Rec.BBPower': 0, 'BBPower': -0.00568501, 'Rec.UO': 0, 'UO': 44.85063613, 'close': 0.231, 'EMA5': 0.23084562, 'SMA5': 0.2293, 'EMA10': 0.23246901, 'SMA10': 0.23237, 'EMA20': 0.23510024, 'SMA20': 0.236425, 'EMA30': 0.23567327, 'SMA30': 0.23866333, 'EMA50': 0.23341322, 'SMA50': 0.237706, 'EMA100': 0.22614021, 'SMA100': 0.221623, 'EMA200': 0.22034421, 'SMA200': 0.2133835, 'Rec.Ichimoku': 0, 'Ichimoku.BLine': 0.23885, 'Rec.VWMA': -1, 'VWMA': 0.23668692, 'Rec.HullMA9': 1, 'HullMA9': 0.22825556, 'Pivot.M.Classic.S3': 0.04233333, 'Pivot.M.Classic.S2': 0.14623333, 'Pivot.M.Classic.S1': 0.19526667, 'Pivot.M.Classic.Middle': 0.25013333, 'Pivot.M.Classic.R1': 0.29916667, 'Pivot.M.Classic.R2': 0.35403333, 'Pivot.M.Classic.R3': 0.45793333, 'Pivot.M.Fibonacci.S3': 0.14623333, 'Pivot.M.Fibonacci.S2': 0.18592313, 'Pivot.M.Fibonacci.S1': 0.21044353, 'Pivot.M.Fibonacci.Middle': 0.25013333, 'Pivot.M.Fibonacci.R1': 0.28982313, 'Pivot.M.Fibonacci.R2': 0.31434353, 'Pivot.M.Fibonacci.R3': 0.35403333, 'Pivot.M.Camarilla.S3': 0.2157275, 'Pivot.M.Camarilla.S2': 0.22525167, 'Pivot.M.Camarilla.S1': 0.23477583, 'Pivot.M.Camarilla.Middle': 0.25013333, 'Pivot.M.Camarilla.R1': 0.25382417, 'Pivot.M.Camarilla.R2': 0.26334833, 'Pivot.M.Camarilla.R3': 0.2728725, 'Pivot.M.Woodie.S3': 0.08845, 'Pivot.M.Woodie.S2': 0.144775, 'Pivot.M.Woodie.S1': 0.19235, 'Pivot.M.Woodie.Middle': 0.248675, 'Pivot.M.Woodie.R1': 0.29625, 'Pivot.M.Woodie.R2': 0.352575, 'Pivot.M.Woodie.R3': 0.40015, 'Pivot.M.Demark.S1': 0.2227, 'Pivot.M.Demark.Middle': 0.26385, 'Pivot.M.Demark.R1': 0.3266, 'open': 0.2297, 'P.SAR': 0.24637133, 'BB.lower': 0.22512954, 'BB.upper': 0.24772046, 'AO[2]': -0.00973471, 'volume': 669125.23, 'change': 0.56595559, 'low': 0.2281, 'high': 0.2331}
+
+# Total: 1.296819999999974$ 
+# Win_per: 100.0%
+
+            # # print(item.oscillators)
+            # print(item.indicators)

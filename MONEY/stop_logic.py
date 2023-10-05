@@ -3,169 +3,109 @@ from pparamss import my_params
 class SL_STRATEGYY():
     def __init__(self, sl_strategy_number, depo) -> None:
         self.sl_strategy_number = sl_strategy_number 
-        self.depo = depo # 200 # 20*10     
+        self.depo = depo
         self.t_p = None
         self.s_l = None
-        self.tralling_s_l = None
-        self.counter = 1
-        self.tralling_flag = False
-        self.checkpoint = None
+        self.atr_multiplier = 1.2 #2.0  
 
     def sl_controller(self, main_stake):
-        # profit = None
+        # profit = None        
+        # qnt = None
         profit_flag = False
-        qnt = None
+
         for item1 in main_stake:
             if not item1['in_position']:
                 # open_order func
                 item1['in_position'] = True
         
         for item in main_stake:
-            profit = None
-            # profit, symbol, defender, enter_price, current_price, in_position, close_order
-            # if item['enter_price']:
-            # try:
-            #     qnt = round((self.depo/item['enter_price']), 7)
-            # except Exception as ex:
-            #     print(f"MONEY/stop_logic_1.py_str88:___{ex}")
-            #     continue
+            profit = None            
+            # profit, symbol, defender, enter_price, current_price, 
                         
             try:
-                defender = item['defender']                
-                qnt = item['qnt']
+                # symbol = item["symbol"]
+                defender = item['defender']         
                 enter_price = item['enter_price']
                 current_price = item['current_price']
                 atr = item['atr']
+                qnt = item['qnt']                
+                range_counter = item["range_counter"]
             except Exception as ex:
                 print(f"MONEY/stop_logic_1.py_str94:___{ex}")
 
-            if self.sl_strategy_number == 1:
-                profit_flag, profit = self.sl_strategy_one(defender, enter_price, current_price, qnt)
-                if profit_flag:
+            if self.sl_strategy_number == 2:
+                profit, range_counter = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt, range_counter)
+                item['profit'] = profit
+                item["range_counter"] = range_counter
+                if profit:
                     item['close_order'] = True  
-                item['profit'] = profit
+                    profit_flag = True                 
+                    break 
 
-            elif self.sl_strategy_number == 2:
-                profit_flag, profit = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt)
-                if profit_flag:
-                    item['close_order'] = True  
-                item['profit'] = profit
+            # elif self.sl_strategy_number == 1:
+            #     profit_flag, profit = self.sl_strategy_one(defender, enter_price, current_price, qnt)
+            #     if profit_flag:
+            #         item['close_order'] = True  
+            #     item['profit'] = profit
 
-            elif self.sl_strategy_number == 3:
-                profit_flag, profit = self.sl_strategy_three(defender, enter_price, current_price, atr, qnt) 
-                if profit_flag:
-                    item['close_order'] = True   
-                item['profit'] = profit
+            # elif self.sl_strategy_number == 3:
+            #     profit_flag, profit = self.sl_strategy_three(defender, enter_price, current_price, atr, qnt) 
+            #     if profit_flag:
+            #         item['close_order'] = True   
+            #     item['profit'] = profit
 
-            return main_stake, profit_flag
+        return main_stake, profit_flag
+   
 
-    def sl_strategy_one(self, defender, enter_price, current_price, qnt): 
-        profit = None
-        self.t_p = 0.0015
-        self.s_l = 0.001
-        # self.t_p = 0.015
-        # self.s_l = 0.007
+    def calculate_profit_part(self, defender, enter_price, current_price, atr, range_counter):
+        profit_flag = False
+        # print(defender, enter_price, current_price, atr)
 
-        if defender == 1:             
-            if current_price >= enter_price + enter_price*self.t_p:
-                profit = (current_price - enter_price)*qnt
-                return True, profit
-            if current_price <= enter_price - enter_price*self.s_l:
-                profit = (current_price - enter_price)*qnt
-                return True, profit
-        if defender == -1:                
-            if current_price <= enter_price - enter_price*self.t_p:
-                profit = (enter_price - current_price)*qnt
-                return True, profit
-            if current_price >= enter_price + enter_price*self.s_l:
-                profit = (enter_price - current_price)*qnt
-                return True, profit
-
-        return False, profit
-        
-    def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt):
-            profit = None
-            self.s_l = 0.01
-
-            if defender == 1: 
-                self.checkpoint = enter_price*(1 + self.counter/100)
-                self.tralling_s_l = enter_price + ((self.checkpoint - enter_price)/2)
-                if current_price > enter_price:
-                    if current_price >= self.checkpoint:
-                        self.tralling_flag = True
-                        self.counter += 1
-                        if self.counter == 2:
-                            self.counter = 0
-                            # print('realy i am here')
-                            self.tralling_flag = False
-                            profit = (current_price - enter_price)*qnt
-                            return True, profit                   
-                    if (current_price <= self.tralling_s_l) and self.tralling_flag:
-                        self.counter = 0
-                        # print('hi2')
-                        self.tralling_flag = False
-                        profit = (current_price - enter_price)*qnt
-                        return True, profit  
-                elif current_price < enter_price:
-                    if current_price <= enter_price - atr*self.s_l:
-                        # print('hi3')
-                        self.counter = 0
-                        self.tralling_flag = False
-                        profit = (current_price - enter_price)*qnt
-                        return True, profit
-                    
-            if defender == -1: 
-                self.checkpoint = enter_price*(1 - self.counter/100)
-                self.tralling_s_l = enter_price - ((enter_price - self.checkpoint)/2)
-                if current_price < enter_price:
-                    if current_price <= self.checkpoint:
-                        self.tralling_flag = True
-                        self.counter += 1
-                        if self.counter == 2:
-                            self.counter = 0
-                            # print('realy i am here')
-                            self.tralling_flag = False
-                            profit = (enter_price - current_price)*qnt
-                            return True, profit                 
-                    if (current_price >= self.tralling_s_l) and self.tralling_flag:
-                        self.counter = 0
-                        self.tralling_flag = False
-                        profit = (enter_price - current_price)*qnt
-                        return True, profit  
-
-                elif current_price > enter_price:                        
-                    if current_price >= enter_price + atr*self.s_l:
-                        # print('hi3')
-                        self.counter = 0
-                        self.tralling_flag = False
-                        profit = (enter_price - current_price)*qnt
-                        return True, profit
-                    
-            return False, profit
-    
-    def sl_strategy_three(self, defender, enter_price, current_price, atr, qnt):
-        profit = None
-        self.t_p = 0.015
-        self.s_l = 0.007
-        self.t_p = 0.0015
-        self.s_l = 0.001
-        
-        if defender == 1:                
-            if current_price >= enter_price + atr*self.t_p:
-                profit = (current_price - enter_price)*qnt
-                return True, profit
-            if current_price <= enter_price - atr*self.s_l:
-                profit = (current_price - enter_price)*qnt
-                return True, profit
+        if defender == 1:
+            target_point = enter_price * (1 + (range_counter * (atr/15)))
+            dinamic_sl = enter_price + ((target_point - enter_price)/2)
             
-        if defender == -1:                
-            if current_price <= enter_price - atr*self.t_p:
-                profit = (enter_price - current_price)*qnt
-                return True, profit
-            if current_price >= enter_price + atr*self.s_l:
-                profit = (enter_price - current_price)*qnt
-                return True, profit
+            if current_price >= target_point:                
+                range_counter += 1
+                if range_counter == 3:                
+                    profit_flag = True
+            if (range_counter == 2) and (current_price < target_point) and (current_price >= dinamic_sl):
+                profit_flag = True
 
-        return False, profit
+        elif defender == -1:
+            target_point = enter_price * (1 - (range_counter * (atr/15)))
+            dinamic_sl = enter_price - ((enter_price - target_point)/2)        
+
+            if current_price <= target_point:                
+                range_counter += 1
+                if range_counter == 3:                                      
+                    profit_flag = True
+
+            if (range_counter == 2) and (current_price > target_point) and (current_price <= dinamic_sl):
+                profit_flag = True
+
+        return profit_flag, range_counter
+
+    def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt, range_counter):
+        profit = None
+        static_sl, profit_flag = None, False
+        
+        # print(defender, enter_price, current_price, atr, qnt)
+
+        profit_flag, range_counter = self.calculate_profit_part(defender, enter_price, current_price, atr, range_counter)
+
+        if defender == 1:
+            static_sl = enter_price - atr * self.atr_multiplier
+            if (current_price <= static_sl) or profit_flag:
+                profit = (current_price - enter_price) * qnt
+                return profit, range_counter
+        elif defender == -1:
+            static_sl = enter_price + atr * self.atr_multiplier
+            if (current_price >= static_sl) or profit_flag:
+                profit = (enter_price - current_price) * qnt
+                return profit, range_counter
+
+        return profit, range_counter
+
 
 sl_strategies = SL_STRATEGYY(my_params.sl_strategy_number, my_params.depo)

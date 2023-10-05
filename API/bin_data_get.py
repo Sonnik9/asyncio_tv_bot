@@ -66,34 +66,48 @@ class GET_BINANCE_DATA(Configg):
         
         return symbols
     
-    def get_klines(self, main_stake):
+    def get_klines_helper(self, symbol):
         klines = None
-        # data = None
-        # if not test_flag:
-        for item in main_stake:
-            symbol = item["symbol"]
-            # print(symbol)
-            for _ in range(3):
-                try:
-                    if self.market == 'spot':
-                        klines = self.spot_client.get_klines(symbol=symbol, interval=my_params.interval, limit=15)
-                    elif self.market == 'futures':
-                        klines = self.futures_client.klines(symbol=symbol, interval=my_params.interval, limit=15)
-                    time.sleep(0.1)
-                    break
-                except Exception as ex:
-                    print(f"API/get_data_13:___{ex}")
-                    time.sleep(2)
-                    continue  
+        data = None
+        # print(symbol)
+      
+        for _ in range(3):
+            try:
+                if self.market == 'spot':                    
+                    klines = self.spot_client.get_klines(symbol=symbol, interval=my_params.interval, limit=50)
+                elif self.market == 'futures':
+                    klines = self.futures_client.klines(symbol=symbol, interval=my_params.interval, limit=50)
+                time.sleep(0.1)
+                break
+            except Exception as ex:
+                print(f"API/get_data_13:___{ex}")
+                time.sleep(2)
+                continue  
 
-            if klines:
-                item['klines'] = pd.DataFrame(klines).iloc[:, :6]
-                item['klines'].columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
-                item['klines'] = item['klines'].set_index('Time')
-                item['klines'].index = pd.to_datetime(item['klines'].index, unit='ms')
-                item['klines'] = item['klines'].astype(float)
+        if klines:
+            data = pd.DataFrame(klines).iloc[:, :6]
+            data.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
+            data = data.set_index('Time')
+            data.index = pd.to_datetime(data.index, unit='ms')
+            data = data.astype(float)
 
-        return main_stake
+        return data
+
+    
+    def get_klines(self, data):
+
+        if my_params.main_strategy_number == 1:
+            for item in data:
+                symbol = item["symbol"]
+                item["klines"] = self.get_klines_helper(symbol)
+            return data
+        # elif my_params.main_strategy_number == 2:
+        #     repl = None
+        #     symbol = data
+        #     repl = self.get_klines_helper(symbol)
+        #     return repl
+
+        
 
 # python -m API.get_data
 #     

@@ -1,14 +1,39 @@
 from pparamss import my_params
-from ENGIN.ind_strategy_1 import get_orders_stek_1
-from ENGIN.ind_strategy_2 import get_orders_stek_2
+from ENGIN.ind_strategy_1 import sigmals_handler_one
+from ENGIN.ind_strategy_2 import sigmals_handler_two
+from tradingview_ta import *
 
-def main_strategy_control_func(top_coins):
-    main_stake = None
-    my_params.ind_strategy_number    
+class STRATEGY_CONTROLLER():
 
-    if my_params.ind_strategy_number == 1:
-        main_stake = get_orders_stek_1.get_tv_signals(top_coins, my_params.interval)
-    elif my_params.ind_strategy_number == 2:
-        main_stake = get_orders_stek_2.get_udf_strategy_signals(top_coins, my_params.interval)
-    return main_stake
+    def __init__(self)-> None:
+        pass
+
+    def get_tv_signals(self, top_coins):
+
+        all_coins_indicators = None        
+        symbols = [f"BINANCE:{x}" for x in top_coins if x]
+
+        all_coins_indicators = get_multiple_analysis(symbols=symbols,
+                            screener='crypto',                    
+                            interval=my_params.interval)
+        
+        return all_coins_indicators
+
+    def main_strategy_control_func(self, top_coins):
+        usual_defender_stake = []
+        all_coins_indicators = None
+        try:
+            all_coins_indicators = self.get_tv_signals(top_coins) 
+        except Exception as ex:
+            print(ex)  
+
+        if my_params.main_strategy_number == 1:
+            usual_defender_stake = sigmals_handler_one(all_coins_indicators)           
+            
+        elif my_params.main_strategy_number == 2:
+            usual_defender_stake = sigmals_handler_two(all_coins_indicators)
+        
+        return usual_defender_stake
+
+strateg_controller = STRATEGY_CONTROLLER()
 

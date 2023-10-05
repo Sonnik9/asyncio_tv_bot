@@ -2,7 +2,7 @@ import asyncio
 # import time
 from API.bin_data_get import bin_data
 from pparamss import my_params
-from ENGIN.main_strategy_controller import main_strategy_control_func
+from ENGIN.main_strategy_controller import strateg_controller
    
 from UTILS.waiting_candle import kline_waiter
 from UTILS.indicators import calculate_atr
@@ -30,7 +30,7 @@ async def price_monitoring(main_stakee, data_callback):
     # print(main_stake)
     returning_main_stake = []
     streams = [f"{k['symbol'].lower()}@kline_1s" for k in main_stakee]
-    # print(f"start_stake:___{len(main_stakee)}")
+    print(f"start_stake:___{len(main_stakee)}")
     # print(streams)
     # return
         
@@ -50,7 +50,7 @@ async def price_monitoring(main_stakee, data_callback):
                         subscribe_request = {
                             "method": "SUBSCRIBE",
                             "params": streams,
-                            "id": 7
+                            "id": 94859867947
                         }
                         try:
                             data_prep = await ws.send_json(subscribe_request)                            
@@ -64,9 +64,11 @@ async def price_monitoring(main_stakee, data_callback):
                         async for msg in ws:                            
                             if msg.type == aiohttp.WSMsgType.TEXT:
                                 try:                                    
-                                    data = json.loads(msg.data)                                                            
+                                    data = json.loads(msg.data)  
+                                    # print(data)                                                          
                                     symbol = data.get('data',{}).get('s')                                    
-                                    close_price = float(data.get('data',{}).get('k',{}).get('c'))                                    
+                                    close_price = float(data.get('data',{}).get('k',{}).get('c'))   
+                                    # print(close_price) s                                
                                     intermedeate_data_list.append((symbol, close_price))                                                    
                                 except:
                                     pass
@@ -79,9 +81,6 @@ async def price_monitoring(main_stakee, data_callback):
                                         continue
                                     main_stakee, profit_flag = await data_callback(intermedeate_data_list, enter_price_list, main_stakee)
                                     intermedeate_data_list = []
-                                    # print(f"returning_stake:___{len(returning_main_stake)}")
-
-                                    
                                     # await asyncio.sleep(5)
                                     if profit_flag:    
                                         returning_main_stake = main_stakee                                   
@@ -101,6 +100,7 @@ async def process_data(intermediate_data_list, enter_price_list, main_stake):
     # print(f"process_data_enter_price_list:__{len(enter_price_list)}")
     # print(f"process_data_intermediate_data_list:__{len(enter_price_list)}")
     # print(f"process_data_main_stake_before:__{len(main_stake)}")
+    # print(enter_price_list)
 
     symbol_to_item = {item['symbol']: item for item in main_stake}    
     profit_flag = False
@@ -113,6 +113,7 @@ async def process_data(intermediate_data_list, enter_price_list, main_stake):
             symbol_to_item[symbol]['enter_price'] = enter_price
 
     main_stake = list(symbol_to_item.values())
+    # print(main_stake)
 
     try:
         main_stake, profit_flag = sl_strategies.sl_controller(main_stake)
@@ -129,6 +130,7 @@ def stake_generator(usual_defender_stake):
             "defender": d,
             "enter_price": None,
             "current_price": None,
+            "range_counter": 1,
             "in_position": False,
             "close_order": False
         }
@@ -145,12 +147,13 @@ async def main():
     intermedeate_raport_list = [] 
     main_stake_symbols_list = []
     recalculated_depo = None
-
+    # print(my_params.limit_selection_coins)
     try:
         top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
     except Exception as ex:
         print(f"main__15:\n{ex}")    
-    # print(top_coins) 
+    print(len(top_coins)) 
+    
 
 
     # sys.exit() 
@@ -164,7 +167,7 @@ async def main():
     while True:
         try:
             # await asyncio.sleep(2)
-            if len(total_raport_list) >= 10:
+            if len(total_raport_list) >= 1:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
                 break
@@ -181,35 +184,39 @@ async def main():
 
 
             try:
-                usual_defender_stake = main_strategy_control_func(top_coins)
+                usual_defender_stake = strateg_controller.main_strategy_control_func(top_coins)
+                print(len(usual_defender_stake))
                 usual_defender_stake = [x for x in usual_defender_stake if x[0] not in main_stake_symbols_list]
+                # print(usual_defender_stake)
             except Exception as ex:
-                print(ex) 
-
-            if not usual_defender_stake:
-                await asyncio.sleep(5)
-                continue
-
-            if first_flag:                              
-                if len(usual_defender_stake) > my_params.max_threads:
-                    usual_defender_stake = usual_defender_stake[:my_params.max_threads]
-                universal_stake = stake_generator(usual_defender_stake)
-                main_stake = universal_stake
-                first_flag = False  
-            else:
-                decimal = my_params.max_threads - len(main_stake)
-                if len(usual_defender_stake) > decimal:
-                    usual_defender_stake = usual_defender_stake[:decimal]
-                universal_stake = stake_generator(usual_defender_stake)
-                main_stake = main_stake + universal_stake
-
-
-
+                print(f"192___{ex}") 
+            try:
+                if len(usual_defender_stake) == 0:
+                    await asyncio.sleep(5)
+                    continue
+                else:
+                    if first_flag:                                            
+                        if len(usual_defender_stake) > my_params.max_threads:
+                            usual_defender_stake = usual_defender_stake[:my_params.max_threads]
+                        universal_stake = stake_generator(usual_defender_stake)
+                        main_stake = universal_stake
+                        first_flag = False  
+                    else:
+                        try:
+                            decimal = my_params.max_threads - len(main_stake)
+                            if len(usual_defender_stake) > decimal:
+                                usual_defender_stake = usual_defender_stake[:decimal]
+                            universal_stake = stake_generator(usual_defender_stake)
+                            main_stake = main_stake + universal_stake
+                        except Exception as ex:
+                            print(f"212___{ex}") 
+            except Exception as ex:
+                print(f"214___{ex}") 
               
             # ///////////////////////////////////////////////////////////////////////
             try:
                 try:
-                    # print(main_stake)
+                    print(main_stake)
                     main_stake = bin_data.get_klines(main_stake)
                     for item in main_stake:
                         item["atr"] = calculate_atr(item["klines"])
