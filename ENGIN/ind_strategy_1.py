@@ -7,22 +7,25 @@ def sigmals_handler_one(all_coins_indicators):
     indicator = None
 
     for _, item in all_coins_indicators.items():
-        try:            
-            # print(item.oscillators)
-            # print(item.indicators)
+        try:
+            close_price = item.indicators['close']           
+            high = item.indicators['high']
+            low = item.indicators['low'] 
             indicator = item.symbol
             recommendation = item.summary["RECOMMENDATION"]
+            atr_a = (max(abs(high - low), abs(high - close_price), abs(low - close_price))) * 1.8
+            atr = (sum([abs(high - low), abs(high - close_price), abs(low - close_price)]) / 3) * 3
         except Exception as ex:
             pass
             # print(ex)
         if recommendation == 'STRONG_BUY':
             try:
-                orders_stek.append((indicator, 1))          
+                orders_stek.append((indicator, 1, atr, atr_a))          
             except:
                 pass
         elif recommendation == 'STRONG_SELL':  
             try:          
-                orders_stek.append((indicator, -1))             
+                orders_stek.append((indicator, -1, atr, atr_a))             
             except:
                 pass
 

@@ -31,6 +31,7 @@ class STRATEGY_CONTROLLER():
             usual_defender_stake = sigmals_handler_one(all_coins_indicators)           
             
         elif my_params.main_strategy_number == 2:
+            # print('dkfjbgv')
             usual_defender_stake = sigmals_handler_two(all_coins_indicators)
         
         return usual_defender_stake

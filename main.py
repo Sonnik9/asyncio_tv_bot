@@ -17,7 +17,9 @@ from datetime import datetime, time
 import asyncio
 import aiohttp
 import json
-import sys
+import atexit
+
+import sys 
 
 # stake_list_lock = asyncio.Lock()
 # current_stake_list = set()
@@ -132,9 +134,11 @@ def stake_generator(usual_defender_stake):
             "current_price": None,
             "range_counter": 1,
             "in_position": False,
-            "close_order": False
+            "close_order": False,
+            "atr": atr,
+            "atr_a": atr_a
         }
-            for s, d in usual_defender_stake            
+            for s, d, atr, atr_a in usual_defender_stake            
     ] 
 
     return universal_stake
@@ -147,14 +151,13 @@ async def main():
     intermedeate_raport_list = [] 
     main_stake_symbols_list = []
     recalculated_depo = None
+    atr_corrector_list = []
     # print(my_params.limit_selection_coins)
     try:
         top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
     except Exception as ex:
         print(f"main__15:\n{ex}")    
     print(len(top_coins)) 
-    
-
 
     # sys.exit() 
     try:
@@ -167,7 +170,7 @@ async def main():
     while True:
         try:
             # await asyncio.sleep(2)
-            if len(total_raport_list) >= 1:
+            if len(total_raport_list) >= 4:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
                 break
@@ -215,17 +218,7 @@ async def main():
               
             # ///////////////////////////////////////////////////////////////////////
             try:
-                try:
-                    print(main_stake)
-                    main_stake = bin_data.get_klines(main_stake)
-                    for item in main_stake:
-                        item["atr"] = calculate_atr(item["klines"])
-                        item["qnt"], recalculated_depo = calc_qnt_func(item, my_params.depo)
-                        # print(recalculated_depo)
-                        del item["klines"]
-                    # print(main_stake)
-                except Exception as ex:
-                    print(f"main__15:\n{ex}") 
+                # print(main_stake)
                 # sys.exit()
                 main_stake = await price_monitoring(main_stake, process_data)
                 if main_stake:                         
@@ -246,6 +239,10 @@ async def main():
     print("There was a good!")
 
 if __name__ == "__main__":
+    try:
+        atexit.register(cleanup_cache)
+    except Exception as ex:
+        print(f"461____{ex}")
     asyncio.run(main())
 
 # killall -9 python

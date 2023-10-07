@@ -1,6 +1,6 @@
 
 def bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slowk, current_bunch):
-    b_bband_q, s_bband_q, b_rsi_lev, s_rsi_lev, b_macd__q, s_macd_q, b_stoch_q, s_stoch_q = 1, 1, 33, 67, 1, 1, 23, 77
+    b_bband_q, s_bband_q, b_rsi_lev, s_rsi_lev, b_macd__q, s_macd_q, b_stoch_q, s_stoch_q = 1, 1, 45, 55, 1, 1, 23, 77
     # 33, 67
     # 25, 75
 
@@ -18,6 +18,12 @@ def bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slow
         buy_lite_macd_signal = macd > signal * b_macd__q
         sell_lite_macd_signal = macd < signal * s_macd_q
         signals_sum.append((buy_lite_macd_signal, sell_lite_macd_signal))
+
+    if 'macd_strong_flag' in current_bunch:            
+        buy_strong_macd_signal = (macd > signal * b_macd__q) & (macd < 0)
+        sell_strong_macd_signal = (macd < signal * s_macd_q) & (macd > 0)
+        signals_sum.append((buy_strong_macd_signal, sell_strong_macd_signal))
+
 
     if 'rsi_flag' in current_bunch:                
         buy_rsi_signal = rsi <= b_rsi_lev
@@ -60,20 +66,28 @@ def trends_defender(close_price, adx, sma):
         return "F"
 
 def sigmals_handler_two(all_coins_indicators): 
+    # print('krf')
     close_price, adx, sma, upper, lower, macd, signal, rsi, fastk, slowk = None, None, None, None, None, None, None, None, None, None
+    atr = None
     orders_stek = []
     bunch_variant = 2 
     for _, item in all_coins_indicators.items():
         try: 
-            close_price = item.indicators['close'] 
-            # high = item.indicators['high']
-            # low = item.indicators['low']
+            # print(item.indicators)
+            close_price = item.indicators['close']           
+            high = item.indicators['high']
+            low = item.indicators['low']            
             adx = item.indicators["ADX"] 
             sma = item.indicators["SMA20"] 
             upper, lower = item.indicators["BB.upper"], item.indicators["BB.lower"] 
             macd, signal = item.indicators["MACD.macd"], item.indicators["MACD.signal"]     
             rsi = item.indicators["RSI"]
             fastk, slowk = item.indicators["Stoch.K"], item.indicators["Stoch.D"] 
+
+            atr_a = (max(abs(high - low), abs(high - close_price), abs(low - close_price))) * 1.8
+            # print(atr_a)
+
+            atr = (sum([abs(high - low), abs(high - close_price), abs(low - close_price)]) / 3) * 3
             indicator = item.symbol            
         except Exception as ex:
             pass
@@ -83,19 +97,25 @@ def sigmals_handler_two(all_coins_indicators):
         # print(trende_sign)
                     
         if trende_sign == 'U':
-            current_bunch = ['bband_flag', 'macd_lite_flag', 'U']
+            # current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'U']
+            # current_bunch = ['bband_flag', 'macd_lite_flag', 'U']
+            current_bunch = ['bband_flag', 'macd_strong_flag', 'U']
+            
         if trende_sign == 'D':
-            current_bunch = ['bband_flag', 'macd_lite_flag', 'D']
+            # current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'D']
+            # current_bunch = ['bband_flag', 'macd_lite_flag', 'D']
+            current_bunch = ['bband_flag', 'macd_strong_flag', 'D']
             
         if trende_sign == 'F':
             if bunch_variant == 2:
-                current_bunch = ['macd_lite_flag', 'stoch_flag', 'F']
+                # current_bunch = ['macd_lite_flag', 'stoch_flag', 'F']
+                current_bunch = ['macd_strong_flag', 'stoch_flag', 'F']
 
         buy_signal, sell_signal = bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slowk, current_bunch)
 
         if buy_signal:
-            orders_stek.append((indicator, 1))
+            orders_stek.append((indicator, 1, atr, atr_a))
         elif sell_signal:
-            orders_stek.append((indicator, -1))
+            orders_stek.append((indicator, -1, atr, atr_a))
 
     return orders_stek

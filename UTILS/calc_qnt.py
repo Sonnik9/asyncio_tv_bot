@@ -31,7 +31,7 @@ def calc_qnt_func(item, depo):
 
     # print(symbol, depo, enter_price)
     symbol_info = None
-    symbol_data = None
+    symbol_data = None 
     quantity, recalculated_depo = None, None
     symbol_info = get_symbol_info(market, symbol)
     if symbol_info:

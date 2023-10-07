@@ -90,24 +90,21 @@ class GET_BINANCE_DATA(Configg):
             data = data.set_index('Time')
             data.index = pd.to_datetime(data.index, unit='ms')
             data = data.astype(float)
+            # print(data)
 
         return data
-
     
     def get_klines(self, data):
 
-        if my_params.main_strategy_number == 1:
-            for item in data:
-                symbol = item["symbol"]
-                item["klines"] = self.get_klines_helper(symbol)
-            return data
+        for item in data:
+            symbol = item["symbol"]
+            item["klines"] = self.get_klines_helper(symbol)
+        return data
         # elif my_params.main_strategy_number == 2:
         #     repl = None
         #     symbol = data
         #     repl = self.get_klines_helper(symbol)
         #     return repl
-
-        
 
 # python -m API.get_data
 #     

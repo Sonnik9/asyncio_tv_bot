@@ -1534,3 +1534,30 @@
 
             # # print(item.oscillators)
             # print(item.indicators)
+
+                # try:
+                #     # print(main_stake)
+                #     main_stake = bin_data.get_klines(main_stake)
+                #     print(main_stake)
+                #     qq = 0
+                #     for item in main_stake:
+                #         item["atr"] = calculate_atr(item["klines"])
+                #         item["qnt"], recalculated_depo = calc_qnt_func(item, my_params.depo)
+                #         # print(recalculated_depo)
+                #         try:
+                #             qq = item["atr"] / item["atr_1"]
+                #             atr_corrector_list.append(qq)
+                #         except:
+                #             pass
+                         
+                #         del item["klines"]
+                    
+                #     atr_corrector = sum(atr_corrector_list) / len(atr_corrector_list) 
+                #     print(main_stake)
+                #     print(atr_corrector)
+                # except Exception as ex:
+                #     print(f"main__233:\n{ex}") 
+                # sys.exit()
+
+            # print(item.oscillators)
+            # print(item.indicators)

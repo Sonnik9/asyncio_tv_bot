@@ -28,7 +28,8 @@ class SL_STRATEGYY():
                 enter_price = item['enter_price']
                 current_price = item['current_price']
                 atr = item['atr']
-                qnt = item['qnt']                
+                # qnt = item['qnt']  
+                qnt = round((my_params.depo / enter_price), 7)           
                 range_counter = item["range_counter"]
             except Exception as ex:
                 print(f"MONEY/stop_logic_1.py_str94:___{ex}")
