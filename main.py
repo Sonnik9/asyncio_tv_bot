@@ -18,6 +18,7 @@ import asyncio
 import aiohttp
 import json
 import atexit
+from UTILS.clean_cashe import cleanup_cache
 
 import sys 
 
@@ -173,6 +174,7 @@ async def main():
             if len(total_raport_list) >= 4:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
+                cleanup_cache()
                 break
 
             # now = datetime.now()

@@ -1,4 +1,5 @@
 from pparamss import my_params
+from API.create_order import create_orders_obj
 
 class SL_STRATEGYY():
     def __init__(self, sl_strategy_number, depo) -> None:
@@ -32,7 +33,14 @@ class SL_STRATEGYY():
                 qnt = round((my_params.depo / enter_price), 7)           
                 range_counter = item["range_counter"]
             except Exception as ex:
-                print(f"MONEY/stop_logic_1.py_str94:___{ex}")
+                print(f"MONEY/stop_logic_1.py_str36:___{ex}")
+            
+
+            try:
+                create_orders_obj.open_order(item, qnt)
+            except Exception as ex:
+                del item 
+                print(f"MONEY/stop_logic_1.py_str41:___{ex}")
 
             if self.sl_strategy_number == 2:
                 profit, range_counter = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt, range_counter)
@@ -40,23 +48,14 @@ class SL_STRATEGYY():
                 item["range_counter"] = range_counter
                 if profit:
                     item['close_order'] = True  
-                    profit_flag = True                 
-                    break 
+                    profit_flag = True   
+                    try:
+                        create_orders_obj.close_order(item, qnt)
+                    except Exception as ex:                         
+                        print(f"MONEY/stop_logic_1.py_str56:___{ex}")              
+                    break
 
-            # elif self.sl_strategy_number == 1:
-            #     profit_flag, profit = self.sl_strategy_one(defender, enter_price, current_price, qnt)
-            #     if profit_flag:
-            #         item['close_order'] = True  
-            #     item['profit'] = profit
-
-            # elif self.sl_strategy_number == 3:
-            #     profit_flag, profit = self.sl_strategy_three(defender, enter_price, current_price, atr, qnt) 
-            #     if profit_flag:
-            #         item['close_order'] = True   
-            #     item['profit'] = profit
-
-        return main_stake, profit_flag
-   
+        return main_stake, profit_flag  
 
     def calculate_profit_part(self, defender, enter_price, current_price, atr, range_counter):
         profit_flag = False

@@ -1,22 +1,18 @@
+import os
 import shutil
-import tempfile
 
 def cleanup_cache():
-    import os
-    try:
-        cache_dir = tempfile.mkdtemp()
-    except Exception as ex:
-        # print(f"386____{ex}")
-        pass    
-    try:
-        if os.path.exists("__pycache__"):
-            shutil.rmtree("__pycache__")
-    except Exception as ex:
-        # print(f"392____{ex}")
-        pass    
-    try:
-        if os.path.exists(cache_dir):
-            shutil.rmtree(cache_dir)
-    except Exception as ex:
-        # print(f"396____{ex}")
-        pass
+    project_root = os.getcwd()  # Получаем корневую папку проекта
+    folders_to_clear = [project_root, "API", "ENGIN", "MONEY", "UTILS"]
+
+    for folder in folders_to_clear:
+        folder_path = os.path.join(project_root, folder)
+        pycache_path = os.path.join(folder_path, "__pycache__")
+
+        if os.path.exists(pycache_path):
+            shutil.rmtree(pycache_path)
+            print(f"Удален кеш из {pycache_path}")
+
+# cleanup_cache()
+
+# python -m UTILS.clean_cashe

@@ -1561,3 +1561,86 @@
 
             # print(item.oscillators)
             # print(item.indicators)
+
+
+# import shutil
+# import tempfile
+
+# def cleanup_cache():
+#     import os
+#     try:
+
+        
+#         cache_dir = tempfile.mkdtemp()
+#     except Exception as ex:
+#         # print(f"386____{ex}")
+#         pass    
+#     try:
+#         if os.path.exists("__pycache__"):
+#             shutil.rmtree("__pycache__")
+#     except Exception as ex:
+#         # print(f"392____{ex}")
+#         pass    
+#     try:
+#         if os.path.exists(cache_dir):
+#             shutil.rmtree(cache_dir)
+#     except Exception as ex:
+#         # print(f"396____{ex}")
+#         pass
+
+
+            # elif self.sl_strategy_number == 1:
+            #     profit_flag, profit = self.sl_strategy_one(defender, enter_price, current_price, qnt)
+            #     if profit_flag:
+            #         item['close_order'] = True  
+            #     item['profit'] = profit
+
+            # elif self.sl_strategy_number == 3:
+            #     profit_flag, profit = self.sl_strategy_three(defender, enter_price, current_price, atr, qnt) 
+            #     if profit_flag:
+            #         item['close_order'] = True   
+            #     item['profit'] = profit
+
+
+        # if self.market == 'futures':
+        #     response = self.spot_client.futures_create_order(**params)
+        # elif self.market == 'futures':
+        #     response = self.futures_client.new_order(**params)
+        # else:
+        #     raise ValueError("Invalid market type")
+
+
+# from API.config import Configg
+# from pparamss import my_params
+
+# class CREATE_BINANCE_ORDER(Configg):
+
+#     def __init__(self, market, test_flag) -> None:
+#         super().__init__(market=market, test_flag=test_flag)
+
+#     def open_order(self,):
+#         pass
+
+#     def close_order(self,):
+#         pass
+
+# create_orders_obj = CREATE_BINANCE_ORDER()
+
+# symbol = 'BTCUSDT'
+# quantity = 1.0
+# price = 50000
+# side = 'BUY'
+# order_type = 'LIMIT'
+
+# order_type = 'MARKET'
+
+# # Open an order
+# response = create_orders_obj.open_order(symbol, quantity, price, side, order_type)
+# print("Opened Order:", response)
+
+# # Close an order
+# order_id = response['orderId']  # You can get the order ID from the response when opening the order
+# close_response = create_orders_obj.close_order(symbol, order_id)
+# print("Closed Order:", close_response)
+
+# order_id = response.get('orderId')

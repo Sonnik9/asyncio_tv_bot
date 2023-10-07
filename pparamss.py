@@ -8,7 +8,7 @@ class Parameters:
         # self.test_flag = False
         self.test_flag = True
         self.depo = 100
-        self.main_strategy_number = 1
+        self.main_strategy_number = 2
         self.sl_strategy_number = 2
         self.limit_selection_coins = 210
 
