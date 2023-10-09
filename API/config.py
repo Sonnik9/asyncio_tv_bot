@@ -16,15 +16,10 @@ class Configg():
     spot_client, futures_client = None, None
     header = None
 
-    def __init__(self, market, test_flag) -> None:  
-        if market == 'spot':
-            self.api_key  = os.getenv("BINANCE_API_PUBLIC_KEY_SPOT", "")
-            self.api_secret = os.getenv("BINANCE_API_PRIVATE_KEY_SPOT", "")
-            self.spot_client = Client(self.api_key, self.api_secret)
-        if market == 'futures':
-            self.api_key  = os.getenv("BINANCE_API_PUBLIC_KEY_FUTURES", "")
-            self.api_secret = os.getenv("BINANCE_API_PRIVATE_KEY_FUTURES", "")  
-            self.futures_client = UMFutures(self.api_key, self.api_secret)
+    def __init__(self, market, test_flag) -> None:
+        self.api_key  = os.getenv("BINANCE_API_PUBLIC_KEY_SPOT", "")
+        self.api_secret = os.getenv("BINANCE_API_PRIVATE_KEY_SPOT", "")
+        self.binance_python_client = Client(self.api_key, self.api_secret)
              
         self.market = market    
         self.test_flag = test_flag

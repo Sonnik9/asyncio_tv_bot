@@ -7,6 +7,7 @@ class GET_BINANCE_DATA(Configg):
 
     def __init__(self, market, test_flag) -> None:
         super().__init__(market=market, test_flag=test_flag)
+        # print(f"bin_data_10:__{self.binance_python_client}")
         # self.top_coins = []
 
     def top_coins_filter(self, all_tickers, limit_selection_coins):
@@ -38,10 +39,10 @@ class GET_BINANCE_DATA(Configg):
             for _ in range(3):
                 try:
                     if self.market == 'spot':
-                        all_tickers = self.spot_client.get_ticker()
+                        all_tickers = self.binance_python_client.get_ticker()                        
                         symbols = self.top_coins_filter(all_tickers, limit_selection_coins)
                     elif self.market == 'futures':
-                        all_tickers = self.futures_client.ticker_24hr_price_change()
+                        all_tickers = self.binance_python_client.futures_ticker()                      
                         symbols = self.top_coins_filter(all_tickers, limit_selection_coins)
                     break
                 except Exception as ex:
@@ -69,14 +70,13 @@ class GET_BINANCE_DATA(Configg):
     def get_klines_helper(self, symbol):
         klines = None
         data = None
-        # print(symbol)
       
         for _ in range(3):
             try:
                 if self.market == 'spot':                    
-                    klines = self.spot_client.get_klines(symbol=symbol, interval=my_params.interval, limit=50)
+                    klines = self.binance_python_client.get_klines(symbol=symbol, interval=my_params.interval, limit=50)
                 elif self.market == 'futures':
-                    klines = self.futures_client.klines(symbol=symbol, interval=my_params.interval, limit=50)
+                    klines = self.binance_python_client.futures_klines(symbol=symbol, interval=my_params.interval, limit=50)
                 time.sleep(0.1)
                 break
             except Exception as ex:
@@ -90,8 +90,7 @@ class GET_BINANCE_DATA(Configg):
             data = data.set_index('Time')
             data.index = pd.to_datetime(data.index, unit='ms')
             data = data.astype(float)
-            # print(data)
-
+            
         return data
     
     def get_klines(self, data):
@@ -100,12 +99,7 @@ class GET_BINANCE_DATA(Configg):
             symbol = item["symbol"]
             item["klines"] = self.get_klines_helper(symbol)
         return data
-        # elif my_params.main_strategy_number == 2:
-        #     repl = None
-        #     symbol = data
-        #     repl = self.get_klines_helper(symbol)
-        #     return repl
-
+    
 # python -m API.get_data
-#     
+   
 bin_data = GET_BINANCE_DATA(my_params.market, my_params.test_flag)

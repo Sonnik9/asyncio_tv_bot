@@ -5,8 +5,8 @@ class Parameters:
         self.interval = str(self.kline_time) + self.time_frame
         self.market = 'futures'
         # self.market = 'spot'
-        # self.test_flag = False
-        self.test_flag = True
+        self.test_flag = False
+        # self.test_flag = True
         self.depo = 100
         self.main_strategy_number = 2
         self.sl_strategy_number = 2

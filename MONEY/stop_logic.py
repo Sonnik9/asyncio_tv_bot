@@ -20,7 +20,9 @@ class SL_STRATEGYY():
                 item1['in_position'] = True
         
         for item in main_stake:
-            profit = None            
+            profit = None  
+            open_order = None   
+            close_order = None       
             # profit, symbol, defender, enter_price, current_price, 
                         
             try:
@@ -33,27 +35,33 @@ class SL_STRATEGYY():
                 qnt = round((my_params.depo / enter_price), 7)           
                 range_counter = item["range_counter"]
             except Exception as ex:
-                print(f"MONEY/stop_logic_1.py_str36:___{ex}")
-            
+                print(f"MONEY/stop_logic_1.py_str36:___{ex}")            
 
             try:
-                create_orders_obj.open_order(item, qnt)
-            except Exception as ex:
-                del item 
+                open_order = create_orders_obj.open_order(item, qnt)
+            except Exception as ex:                
                 print(f"MONEY/stop_logic_1.py_str41:___{ex}")
+                
+            if open_order:
+                if self.sl_strategy_number == 2:
+                    profit, range_counter = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt, range_counter)
+                    item['profit'] = profit
+                    
+                    if profit: 
+                        try:
+                            close_order = create_orders_obj.close_order(item, qnt)
+                            if close_order:
+                                item["range_counter"] = range_counter
+                                item['close_order'] = True  
+                                profit_flag = True  
+                            else:
+                                item['profit'] = None
 
-            if self.sl_strategy_number == 2:
-                profit, range_counter = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt, range_counter)
-                item['profit'] = profit
-                item["range_counter"] = range_counter
-                if profit:
-                    item['close_order'] = True  
-                    profit_flag = True   
-                    try:
-                        create_orders_obj.close_order(item, qnt)
-                    except Exception as ex:                         
-                        print(f"MONEY/stop_logic_1.py_str56:___{ex}")              
-                    break
+                        except Exception as ex:                         
+                            print(f"MONEY/stop_logic_1.py_str56:___{ex}")              
+                        break
+            else:
+                del item
 
         return main_stake, profit_flag  
 

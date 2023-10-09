@@ -6,8 +6,29 @@ class CREATE_BINANCE_ORDER(Configg):
     def __init__(self, market, test_flag) -> None:
         super().__init__(market=market, test_flag=test_flag)
 
+    def orders_request(self, **params):
+        responce = None
+
+        for _ in range(3):
+            if self.market == 'spot':
+                try:
+                    responce = self.binance_python_client.create_order(**params)
+                except Exception as ex:
+                    print(ex)
+                if responce:
+                    break
+            elif self.market == 'futures':   
+                try:         
+                    responce = self.binance_python_client.futures_create_order(**params) 
+                except Exception as ex:
+                    print(ex)                    
+                if responce:
+                    break
+
+        return responce
+
     def open_order(self, item, qnt):
-        response = None
+        responce = None
 
         if item["defender"] == 1:
             side = 'BUY'
@@ -19,22 +40,14 @@ class CREATE_BINANCE_ORDER(Configg):
             'quantity': qnt,
             'price': item["enter_price"],
             'side': side,  
-            'type': 'MARKET',  
-        }        
-        
-        if self.market == 'spot':
-            response = self.spot_client.create_order(**params)
-        elif self.market == 'futures':
-            # response = self.futures_client.new_order(**params)
-            response = self.spot_client.futures_create_order(**params)
-        else:
-            raise ValueError("Invalid market type")       
+            'type': 'MARKET'
+        }  
 
-        return response
+        responce = self.orders_request(**params)  
+        return responce      
 
     def close_order(self, item):
-
-        response = None
+        responce = None
 
         if item["defender"] == 1:
             side = 'SELL'
@@ -45,34 +58,55 @@ class CREATE_BINANCE_ORDER(Configg):
             'symbol': item["symbol"],           
             'side': side,  
             'type': 'MARKET',  
-        }        
-        
-        if self.market == 'spot':
-            response = self.spot_client.create_order(**params)
-        elif self.market == 'futures':
-            # response = self.futures_client.new_order(**params)
-            response = self.spot_client.futures_create_order(**params)
-        else:
-            raise ValueError("Invalid market type")       
+        } 
+        responce = self.orders_request(**params)  
+        return responce  
 
-        return response
-
-    def cancel_all_orderss(self, symbol, order_id):
-        response = None
-        params = {
-            'symbol': symbol,
-            'orderId': order_id,
-            'type': 'LIMIT', 
-        }        
-        
+    def get_open_orders(self):  
+        open_orders = []   
         if self.market == 'spot':
-            response = self.spot_client.cancel_order(**params)
+            try:
+                open_orders = self.binance_python_client.get_open_orders()                
+            except Exception as ex:
+                print(ex)
         elif self.market == 'futures':
-            response = self.futures_client.cancel_order(**params)
-        else:
-            raise ValueError("Invalid market type")
-        
-        return response
+            try:
+                open_orders = self.binance_python_client.futures_get_open_orders()                
+            except Exception as ex:
+                print(ex)
+
+        return open_orders
+
+    def cancel_all_orderss(self):
+        open_orders = []
+       
+        for _ in range(3):
+            if self.market == 'spot':
+                open_orders = self.get_open_orders()
+                print(f"Open orders before canceling: {len(open_orders)}")
+                for order in open_orders:
+                    try:
+                        self.binance_python_client.cancel_order(symbol=order['symbol'], orderId=order['orderId'])
+                    except Exception as ex:
+                        print(ex)
+                open_orders = self.get_open_orders()
+                print(f"Open orders after canceling: {len(open_orders)}")
+
+                if len(open_orders) == 0:
+                    break
+
+            elif self.market == 'futures':
+                open_orders = self.get_open_orders()
+                print(f"Open orders before canceling: {len(open_orders)}")                
+                try:
+                    self.binance_python_client.futures_cancel_all_open_orders()
+                except Exception as ex:
+                    print(ex)
+                open_orders = self.get_open_orders()
+                print(f"Open orders after canceling: {len(open_orders)}")
+
+                if len(open_orders) == 0:
+                    break        
     
 create_orders_obj = CREATE_BINANCE_ORDER(market='spot', test_flag=False)
 

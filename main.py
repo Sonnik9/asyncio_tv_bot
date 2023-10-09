@@ -1,25 +1,24 @@
 import asyncio
 # import time
+# import websockets
 from API.bin_data_get import bin_data
+from API.create_order import create_orders_obj
 from pparamss import my_params
 from ENGIN.main_strategy_controller import strateg_controller
    
 from UTILS.waiting_candle import kline_waiter
-from UTILS.indicators import calculate_atr
-from UTILS.calc_qnt import calc_qnt_func
+# from UTILS.indicators import calculate_atr
+# from UTILS.calc_qnt import calc_qnt_func
+from UTILS.clean_cashe import cleanup_cache
 from MONEY.asumm import asum_counter
 from MONEY.stop_logic import sl_strategies
 from pparamss import my_params
 from API.bin_data_get import bin_data
 import pytz
 from datetime import datetime, time
-# import websockets
 import asyncio
 import aiohttp
 import json
-import atexit
-from UTILS.clean_cashe import cleanup_cache
-
 import sys 
 
 # stake_list_lock = asyncio.Lock()
@@ -174,19 +173,19 @@ async def main():
             if len(total_raport_list) >= 4:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
+                create_orders_obj.cancel_all_orderss()
                 cleanup_cache()
                 break
 
-            # now = datetime.now()
-            # desired_timezone = pytz.timezone('Europe/Kiev')
-            # now_in_desired_timezone = now.astimezone(desired_timezone)
-            # current_time = now_in_desired_timezone.strftime('%H:%M')
-            # print(current_time)
-            # if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
-            #     print('it is time to assuming!')                
-            #     asum_counter(total_raport_list)
-            #     break
-
+            now = datetime.now()
+            desired_timezone = pytz.timezone('Europe/Kiev')
+            now_in_desired_timezone = now.astimezone(desired_timezone)
+            current_time = now_in_desired_timezone.strftime('%H:%M')
+            print(current_time)
+            if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
+                print('it is time to assuming!')                
+                asum_counter(total_raport_list)
+                break
 
             try:
                 usual_defender_stake = strateg_controller.main_strategy_control_func(top_coins)
@@ -241,11 +240,12 @@ async def main():
     print("There was a good!")
 
 if __name__ == "__main__":
-    try:
-        atexit.register(cleanup_cache)
-    except Exception as ex:
-        print(f"461____{ex}")
+    # try:
+    #     atexit.register(cleanup_cache)
+    # except Exception as ex:
+    #     print(f"461____{ex}")
     asyncio.run(main())
+    sys.exit()
 
 # killall -9 python
 # killall -r /path/to/.venv
