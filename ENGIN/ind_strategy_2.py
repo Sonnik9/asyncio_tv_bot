@@ -1,3 +1,4 @@
+from pparamss import my_params
 
 def bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slowk, current_bunch):
     b_bband_q, s_bband_q, b_rsi_lev, s_rsi_lev, b_macd__q, s_macd_q, b_stoch_q, s_stoch_q = 1, 1, 45, 55, 1, 1, 23, 77
@@ -24,7 +25,6 @@ def bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slow
         sell_strong_macd_signal = (macd < signal * s_macd_q) & (macd > 0)
         signals_sum.append((buy_strong_macd_signal, sell_strong_macd_signal))
 
-
     if 'rsi_flag' in current_bunch:                
         buy_rsi_signal = rsi <= b_rsi_lev
         sell_rsi_signal = rsi >= s_rsi_lev
@@ -34,7 +34,6 @@ def bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slow
         buy_stoch_signal = (fastk > slowk) & (fastk < b_stoch_q)
         sell_stoch_signal = (fastk < slowk) & (fastk > s_stoch_q)
         signals_sum.append((buy_stoch_signal, sell_stoch_signal))
-
 
     for buy_signal, sell_signal in signals_sum:
         if buy_signal:
@@ -66,11 +65,11 @@ def trends_defender(close_price, adx, sma):
         return "F"
 
 def sigmals_handler_two(all_coins_indicators): 
-    # print('krf')
+    
     close_price, adx, sma, upper, lower, macd, signal, rsi, fastk, slowk = None, None, None, None, None, None, None, None, None, None
     atr = None
     orders_stek = []
-    bunch_variant = 2 
+     
     for _, item in all_coins_indicators.items():
         try: 
             # print(item.indicators)
@@ -82,11 +81,7 @@ def sigmals_handler_two(all_coins_indicators):
             upper, lower = item.indicators["BB.upper"], item.indicators["BB.lower"] 
             macd, signal = item.indicators["MACD.macd"], item.indicators["MACD.signal"]     
             rsi = item.indicators["RSI"]
-            fastk, slowk = item.indicators["Stoch.K"], item.indicators["Stoch.D"] 
-
-            atr_a = (max(abs(high - low), abs(high - close_price), abs(low - close_price))) * 1.8
-            # print(atr_a)
-
+            fastk, slowk = item.indicators["Stoch.K"], item.indicators["Stoch.D"]
             atr = (sum([abs(high - low), abs(high - close_price), abs(low - close_price)]) / 3) * 3
             indicator = item.symbol            
         except Exception as ex:
@@ -94,28 +89,34 @@ def sigmals_handler_two(all_coins_indicators):
 
         buy_signal, sell_signal = False, False
         trende_sign = trends_defender(close_price, adx, sma)
-        # print(trende_sign)
-                    
+                                    
         if trende_sign == 'U':
-            # current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'U']
-            # current_bunch = ['bband_flag', 'macd_lite_flag', 'U']
-            current_bunch = ['bband_flag', 'macd_strong_flag', 'U']
+            if my_params.BUNCH_VARIANT == 1:
+                current_bunch = ['bband_flag', 'macd_strong_flag', 'U']
+            elif my_params.BUNCH_VARIANT == 2:
+                current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'U']
+            # current_bunch = ['bband_flag', 'macd_lite_flag', 'U']            
             
         if trende_sign == 'D':
-            # current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'D']
+            if my_params.BUNCH_VARIANT == 1:
+                current_bunch = ['bband_flag', 'macd_strong_flag', 'D']
+            elif my_params.BUNCH_VARIANT == 2:
+                current_bunch = ['bband_flag', 'macd_lite_flag', 'rsi_flag', 'D']
             # current_bunch = ['bband_flag', 'macd_lite_flag', 'D']
-            current_bunch = ['bband_flag', 'macd_strong_flag', 'D']
+            
             
         if trende_sign == 'F':
-            if bunch_variant == 2:
-                # current_bunch = ['macd_lite_flag', 'stoch_flag', 'F']
+            if my_params.BUNCH_VARIANT == 1:               
                 current_bunch = ['macd_strong_flag', 'stoch_flag', 'F']
+            elif my_params.BUNCH_VARIANT == 2:
+                current_bunch = ['macd_lite_flag', 'stoch_flag', 'F']
 
         buy_signal, sell_signal = bunch_handler_func(close_price, upper, lower, macd, signal, rsi, fastk, slowk, current_bunch)
 
         if buy_signal:
-            orders_stek.append((indicator, 1, atr, atr_a))
-        elif sell_signal:
-            orders_stek.append((indicator, -1, atr, atr_a))
+            orders_stek.append((indicator, 1, atr))
+        # elif sell_signal and my_params.MARKET == 'futures':
+        elif sell_signal:        
+            orders_stek.append((indicator, -1, atr))
 
     return orders_stek

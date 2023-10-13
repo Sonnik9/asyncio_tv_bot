@@ -1715,3 +1715,373 @@
         #     symbol = data
         #     repl = self.get_klines_helper(symbol)
         #     return repl
+
+# import socket
+
+# # Получаем имя хоста
+# host_name = socket.gethostname()
+
+# # Получаем IP-адрес, связанный с этим хостом
+# ip_address = socket.gethostbyname(host_name)
+
+# print(f"Имя хоста: {host_name}")
+# print(f"IP-адрес: {ip_address}")
+
+
+
+# import requests
+
+# def get_public_ip():
+#     try:
+#         response = requests.get("https://api64.ipify.org?format=json")
+#         data = response.json()
+#         public_ip = data["ip"]
+#         return public_ip
+#     except Exception as e:
+#         print(f"Ошибка при получении публичного IP-адреса: {e}")
+#         return None
+
+# public_ip = get_public_ip()
+# if public_ip:
+#     print(f"Ваш публичный IP-адрес: {public_ip}")
+# else:
+#     print("Не удалось получить публичный IP-адрес.")
+
+            # elif my_params.market == 'futures':
+            #     open_orders = self.get_open_orders()
+            #     print(f"Open orders before canceling: {len(open_orders)}")                
+            #     try:
+            #         self.binance_python_client.futures_cancel_all_open_orders()
+            #     except Exception as ex:
+            #         print(ex)
+            #     open_orders = self.get_open_orders()
+            #     print(f"Open orders after canceling: {len(open_orders)}")
+
+            #     if len(open_orders) == 0:
+            #         break  
+
+
+# raise ValueError('Депозит недостаточен для совершения сделки') 
+
+                # qnt = item['qnt']  
+                # qnt = round((my_params.depo / enter_price), 2) 
+
+
+# from API.config import Configg
+# import time
+# from pparamss import my_params
+# import pandas as pd
+
+# class GET_BINANCE_DATA(Configg):
+
+#     def __init__(self) -> None:
+#         super().__init__()
+
+#     def top_coins_filter(self, all_tickers, limit_selection_coins):
+
+#         data_list = []
+#         top_data_list = []
+#         top_coins = [] 
+#         print(all_tickers[:5])
+#         if my_params.test_flag:  
+#             usdt_filtered = [ticker for ticker in all_tickers if 'USDT' in ticker['symbol'].upper() and 'UP' not in ticker['symbol'].upper() and 'DOWN' not in ticker['symbol'].upper()]
+#             data_list = sorted(usdt_filtered, key=lambda x: float(x['priceChangePercent']), reverse=True)
+#             if len(data_list) > limit_selection_coins:
+#                 top_data_list = data_list[:limit_selection_coins]
+#             top_coins = [coins['symbol'] for coins in top_data_list]
+#         # else:
+#         #     top_coins = [ticker for ticker in all_tickers if 'USDT' in ticker.upper() and 'UP' not in ticker.upper() and 'DOWN' not in ticker.upper() and 'ETC' not in ticker.upper() and 'VET' not in ticker.upper()]
+
+#         #     if len(top_coins) > limit_selection_coins:
+#         #         top_coins = top_coins[:limit_selection_coins]
+
+#         # self.top_coins = top_coins
+#         return top_coins
+
+#     def all_tickers_func(self, limit_selection_coins):
+#         symbols = []
+#         all_tickers = None
+#         method = 'GET'
+#         params = {}
+#         if my_params.test_flag:
+#             for _ in range(3):
+#                 try:
+#                     if my_params.market == 'spot':
+#                         # print('hey')
+#                         all_tickers = self.binance_python_client.get_ticker()  
+#                         # print(all_tickers)                      
+#                         symbols = self.top_coins_filter(all_tickers, limit_selection_coins)
+#                     elif my_params.market == 'futures':
+#                         all_tickers = self.binance_python_client.futures_ticker()  
+#                         # print(all_tickers)                    
+#                         symbols = self.top_coins_filter(all_tickers, limit_selection_coins)
+#                     break
+#                 except Exception as ex:
+#                     print(f"API/get_data_26:___{ex}")  
+#                     time.sleep(2)
+#                     continue
+#         # else:
+#         #     if my_params.market == 'spot':           
+#         #         url = 'https://testnet.binance.vision/api/v3/exchangeInfo'
+#         #     elif my_params.market == 'futures':      
+#         #         url = 'https://testnet.binancefuture.com/fapi/v1/exchangeInfo'
+#         #         try:
+#         #             params = self.get_signature(params)
+#         #         except Exception as ex:
+#         #             print(ex)
+#         #     try:                
+#         #         all_tickers = self.HTTP_request(url, method=method, headers=self.header, params=params)                
+#         #         symbols = [symbol['symbol'] for symbol in all_tickers['symbols']]
+#         #         symbols = self.top_coins_filter(symbols, limit_selection_coins)
+#         #     except Exception as ex:
+#         #         print(ex)
+        
+#         return symbols
+    
+#     # def get_klines_req(self, symbol):
+#     #     klines = None
+#     #     data = None
+      
+#     #     for _ in range(3):
+#     #         try:
+#     #             if my_params.market == 'spot':                    
+#     #                 klines = self.binance_python_client.get_klines(symbol=symbol, interval=my_params.interval, limit=50)
+#     #             elif my_params.market == 'futures':
+#     #                 klines = self.binance_python_client.futures_klines(symbol=symbol, interval=my_params.interval, limit=50)
+#     #             time.sleep(0.1)             
+#     #             break
+#     #         except Exception as ex:
+#     #             print(f"API/get_data_13:___{ex}")
+#     #             time.sleep(2)
+#     #             continue  
+
+#     #     if klines:
+#     #         data = pd.DataFrame(klines).iloc[:, :6]
+#     #         data.columns = ['Time', 'Open', 'High', 'Low', 'Close', 'Volume']
+#     #         data = data.set_index('Time')
+#     #         data.index = pd.to_datetime(data.index, unit='ms')
+#     #         data = data.astype(float)
+            
+#     #     return data
+    
+#     # def get_klines(self, data):
+
+#     #     for item in data:
+#     #         symbol = item["symbol"]
+#     #         item["klines"] = self.get_klines_req(symbol)
+#     #     return data
+    
+# # python -m API.get_data
+   
+# bin_data = GET_BINANCE_DATA()
+
+    # def top_coins_filter(self, all_tickers):
+    #     print(len(all_tickers))      
+    #     top_coins_pairs = []
+    #     usdt_filtered = [] 
+    #     volume_filtered = []
+    #     price_changing_filtered = [] 
+    #     # print(len(all_tickers)) 
+    #     usdt_filtered = [ticker for ticker in all_tickers if ticker['symbol'].upper().endswith('USDT') and 'UP' not in ticker['symbol'].upper() and 'DOWN' not in ticker['symbol'].upper() and 'RUB' not in ticker['symbol'].upper() and 'EUR' not in ticker['symbol'].upper()]
+    #     volume_filtered = sorted(usdt_filtered, key=lambda x: float(x['quoteVolume']), reverse=True)
+    #     volume_filtered = volume_filtered[:my_params.slice_volume_pairs]
+    #     price_changing_filtered = sorted(volume_filtered, key=lambda x: float(x['priceChangePercent']), reverse=True)        
+    #     top_coins_pairs = price_changing_filtered[:my_params.slice_priceChanging_pairs]
+    #     top_coins_pairs = [coins['symbol'] for coins in top_coins_pairs]
+
+    #     return top_coins_pairs
+
+    # def get_top_pairs(self):
+    #     symbols = []
+    #     all_tickers = None
+        
+    #     for _ in range(2):
+    #         try:
+    #             if my_params.market == 'spot':                    
+    #                 all_tickers = self.binance_python_client.get_ticker()                                         
+    #                 symbols = self.top_coins_filter(all_tickers)
+    #             elif my_params.market == 'futures':
+    #                 all_tickers = self.binance_python_client.futures_ticker()                                     
+    #                 symbols = self.top_coins_filter(all_tickers)
+    #             break
+    #         except Exception as ex:
+    #             print(f"API/get_data_26:___{ex}")  
+    #             time.sleep(2)
+    #             continue
+
+        
+    #     return symbols
+
+    # def orders_request(self, params):
+    #     responce = None
+
+    #     for _ in range(2):
+    #         if my_params.market == 'spot':
+    #             try:
+    #                 responce = self.binance_python_client.create_order(**params)
+    #             except Exception as ex:
+    #                 time.sleep(1)
+    #                 print(ex)
+    #                 continue
+    #             break
+    #         elif my_params.market == 'futures': 
+    #             try: 
+    #                 responce = self.binance_python_client.futures_create_order(**params)        
+    #                 # responce = self.binance_python_client.futures_create_order(**params) 
+    #                 # print(responce)
+    #             except Exception as ex:
+    #                 time.sleep(1)
+    #                 print(f"API/create_order_str24:___{ex}")
+    #                 continue
+    #             break
+
+    #     return responce
+
+    # def open_order(self, item, qnt):
+    #     responce = None
+
+    #     if item["defender"] == 1:
+    #         side = 'BUY'
+    #     elif item["defender"] == -1:
+    #         side = "SELL"
+
+    #     params = {
+    #         'symbol': item["symbol"],
+    #         'quantity': qnt, 
+    #         # 'timeInForce':  'GTC',           
+    #         'side': side,  
+    #         'type': 'MARKET',
+    #         # 'price': item["enter_price"],
+    #         'leverage': my_params.leverage           
+    #     } 
+
+    #     responce = self.orders_request(params)  
+
+    #     return responce      
+
+    # def close_order(self, item):
+    #     responce = None
+
+    #     if item["defender"] == 1:
+    #         side = 'SELL'
+    #     elif item["defender"] == -1:
+    #         side = "BUY"
+
+    #     params = {
+    #         'symbol': item["symbol"], 
+    #         'quantity': item["qnt"],           
+    #         'side': side,  
+    #         'type': 'MARKET',  
+    #     }
+    #     # print(params) 
+    #     responce = self.orders_request(params)  
+    #     return responce  
+
+    # def get_open_orders(self):  
+    #     open_orders = []   
+    #     if my_params.market == 'spot':
+    #         try:
+    #             open_orders = self.binance_python_client.get_open_orders()                
+    #         except Exception as ex:
+    #             print(ex)
+    #     elif my_params.market == 'futures':
+    #         try:
+    #             open_orders = self.binance_python_client.futures_get_open_orders()                
+    #         except Exception as ex:
+    #             print(ex)
+
+    #     return open_orders
+
+    # def cancel_all_orderss(self):
+    #     open_orders = []
+       
+    #     for _ in range(2):   
+    #         if my_params.market == 'futures':        
+    #             open_orders = self.get_open_orders()
+    #             print(f"Open orders before canceling: {len(open_orders)}")
+    #             for order in open_orders:
+    #                 try:
+    #                     self.binance_python_client.futures_cancel_order(symbol=order['symbol'], orderId=order['orderId'])
+    #                 except Exception as ex:
+    #                     time.sleep(1)
+    #                     print(ex)
+    #                     continue
+    #             open_orders = self.get_open_orders()
+    #             print(f"Open orders after canceling: {len(open_orders)}")
+    #             break
+
+    # def calcel_all_futures_positions(self):
+    #     positions = self.binance_python_client.futures_account()
+        
+    #     for position in positions['positions']:
+    #         symbol = position['symbol']
+    #         if float(position['positionAmt']) != 0:
+    #             try:
+    #                 # Создаем рыночный ордер на продажу
+    #                 response = self.binance_python_client.futures_create_order(symbol=symbol, side='SELL', type='MARKET', quantity=abs(float(position['positionAmt'])))
+    #                 print(f"Ликвидирована позиция: {symbol}")
+    #                 # Проверяем статус ордера и обрабатываем ошибки, если они есть
+    #                 if 'code' in response:
+    #                     print(f"Ошибка при ликвидации позиции {symbol}: {response['code']} - {response['msg']}")
+    #             except Exception as e:
+    #                 print(f"Ошибка при ликвидации позиции {symbol}: {str(e)}")
+
+
+    # # def calcel_all_futures_positions(self):
+    # #     positions = self.binance_python_client.futures_account()
+    # #     # print(positions)
+    # #     for position in positions['positions']:
+    # #         symbol = position['symbol']
+    # #         if float(position['positionAmt']) != 0:
+    # #             response = self.binance_python_client.futures_create_order(symbol=symbol, side='SELL', type='MARKET', quantity=abs(float(position['positionAmt'])))
+    # #             print(f"Ликвидирована позиция: {symbol}")
+      
+        # self.time_frame_list = [(2000, '15m'), (1000, '30m'), (500, '1h'), (100, '4h')] 
+        # self.long_sell_strategy = ['long_short', 'long', 'short']
+
+
+# conf = Configg()
+# depo = 20
+# price = 14.929
+# symbol = 'ETCUSDT'
+# qnt = calc_qnt_func(symbol, price, depo)
+
+# # print(str(qnt))
+# params = {
+#     'symbol':       symbol,
+#     'side':         'SELL',
+#     'type':         'MARKET',
+#     'timeInForce':  'GTC',
+#     'quantity':     qnt,
+#     'price':        price,
+# }
+
+# conf.open_orderrr(params)
+
+# python -m API.config
+
+    # def get_signature(self, params):
+    #     import time
+    #     params['timestamp'] = int(time.time() *1000)
+    #     params_str = '&'.join([f'{k}={v}' for k,v in params.items()])
+    #     hash = hmac.new(bytes(self.api_secret, 'utf-8'), params_str.encode('utf-8'), hashlib.sha256)        
+    #     params['signature'] = hash.hexdigest()
+        
+    #     return params
+
+
+# from binance.client import Client
+# from binance.um_futures import UMFutures
+
+        # self.binance_python_client = Client(self.api_key, self.api_secret, testnet=my_params.TEST_FLAG)  
+
+        # if not my_params.test_flag:
+        #     if my_params.market == 'spot':
+        #         url = "https://api.binance.com/api/v3/ticker/24hr"
+        #     else:
+        #         url = "https://fapi.binance.com/fapi/v1/ticker/24hr"
+        # else:
+        #     if my_params.market == 'spot':
+        #         url = "https://testnet.binance.com/v3/ticker/24hr"
+        #     else:
+        #         url = "https://testnet.binancefuture.com/fapi/v1/ticker/24hr"

@@ -27,10 +27,10 @@ class STRATEGY_CONTROLLER():
         except Exception as ex:
             print(ex)  
 
-        if my_params.main_strategy_number == 1:
+        if my_params.MAIN_STRATEGY_NUMBER == 1:
             usual_defender_stake = sigmals_handler_one(all_coins_indicators)           
             
-        elif my_params.main_strategy_number == 2:
+        elif my_params.MAIN_STRATEGY_NUMBER == 2:
             # print('dkfjbgv')
             usual_defender_stake = sigmals_handler_two(all_coins_indicators)
         

@@ -1,14 +1,12 @@
 import asyncio
-# import time
-# import websockets
+import math
 from API.bin_data_get import bin_data
 from API.create_order import create_orders_obj
 from pparamss import my_params
-from ENGIN.main_strategy_controller import strateg_controller
-   
+from ENGIN.main_strategy_controller import strateg_controller   
 from UTILS.waiting_candle import kline_waiter
 # from UTILS.indicators import calculate_atr
-# from UTILS.calc_qnt import calc_qnt_func
+from UTILS.calc_qnt import calc_qnt_func
 from UTILS.clean_cashe import cleanup_cache
 from MONEY.asumm import asum_counter
 from MONEY.stop_logic import sl_strategies
@@ -26,21 +24,19 @@ import sys
 # profit_variable_lock = asyncio.Lock()
 # profit_list = []
 
-async def price_monitoring(main_stakee, data_callback):
+async def price_monitoring(main_stake, data_callback):
     url = f'wss://stream.binance.com:9443/stream?streams='      
-    # streams = []
-    # print(main_stake)
-    returning_main_stake = []
-    streams = [f"{k['symbol'].lower()}@kline_1s" for k in main_stakee]
-    print(f"start_stake:___{len(main_stakee)}")
-    # print(streams)
-    # return
-        
+
+    main_stake_var = []
+    main_stake_var = main_stake
+    streams = [f"{k['symbol'].lower()}@kline_1s" for k in main_stake]
+    print(f"start_stake:___{len(main_stake_var)}")
+
     try:
         while True:   
             data_prep = None   
             ws = None            
-            iterr_flag = False
+            first_iter_flag = False
             profit_flag = False
             intermedeate_data_list = []    
             enter_price_list = []
@@ -52,14 +48,14 @@ async def price_monitoring(main_stakee, data_callback):
                         subscribe_request = {
                             "method": "SUBSCRIBE",
                             "params": streams,
-                            "id": 94859867947
+                            "id": 9457947
                         }
                         try:
                             data_prep = await ws.send_json(subscribe_request)                            
                         except:
                             pass
                    
-                        if not data_prep and iterr_flag:                                                
+                        if not data_prep and first_iter_flag:                                                
                             await asyncio.sleep(7)
                             continue
                         
@@ -70,22 +66,28 @@ async def price_monitoring(main_stakee, data_callback):
                                     # print(data)                                                          
                                     symbol = data.get('data',{}).get('s')                                    
                                     close_price = float(data.get('data',{}).get('k',{}).get('c'))   
-                                    # print(close_price) s                                
-                                    intermedeate_data_list.append((symbol, close_price))                                                    
+                                    # print(close_price) 
+
+                                    for item in main_stake_var:
+                                        if symbol == item["symbol"]:
+                                            intermedeate_data_list.append((symbol, close_price))                               
                                 except:
                                     pass
-
-                                if len(intermedeate_data_list) == len(streams):
-                                    if not iterr_flag:                                        
+                                
+                                if len(intermedeate_data_list) == len(main_stake_var):
+                                    if not first_iter_flag:                                
                                         enter_price_list = intermedeate_data_list
-                                        iterr_flag = True
+                                        first_iter_flag = True
                                         intermedeate_data_list = []
                                         continue
-                                    main_stakee, profit_flag = await data_callback(intermedeate_data_list, enter_price_list, main_stakee)
+                                    main_stake_var, profit_flag = await data_callback(intermedeate_data_list, enter_price_list, main_stake_var)
                                     intermedeate_data_list = []
                                     # await asyncio.sleep(5)
-                                    if profit_flag:    
-                                        returning_main_stake = main_stakee                                   
+                                    if len(main_stake_var) == 0:
+                                        await ws.close()
+                                        print('Something not very good..')
+                                        # sys.exit()
+                                    if profit_flag:                               
                                         return 
 
             except Exception as e:
@@ -96,7 +98,7 @@ async def price_monitoring(main_stakee, data_callback):
         pass
     finally:
         await ws.close()
-        return returning_main_stake
+        return main_stake_var
     
 async def process_data(intermediate_data_list, enter_price_list, main_stake):
     # print(f"process_data_enter_price_list:__{len(enter_price_list)}")
@@ -132,18 +134,19 @@ def stake_generator(usual_defender_stake):
             "defender": d,
             "enter_price": None,
             "current_price": None,
-            "range_counter": 1,
+            "target_point_level": 1,
             "in_position": False,
             "close_order": False,
+            "qnt": None,
             "atr": atr,
-            "atr_a": atr_a
+            # "atr_a": atr_a
         }
-            for s, d, atr, atr_a in usual_defender_stake            
+            for s, d, atr in usual_defender_stake            
     ] 
 
     return universal_stake
 
-async def main():
+async def main(start_time):
     first_flag = True
     top_coins = []  
     usual_defender_stake = []
@@ -154,14 +157,19 @@ async def main():
     atr_corrector_list = []
     # print(my_params.limit_selection_coins)
     try:
-        top_coins = bin_data.all_tickers_func(my_params.limit_selection_coins)
+        top_coins = bin_data.get_top_pairs()
     except Exception as ex:
         print(f"main__15:\n{ex}")    
     print(len(top_coins)) 
+    print(top_coins) 
+    # top_coins = [x.replace('USDT', '') for x in top_coins]
+    # print(top_coins)
+    finish_time = time.time() - start_time    
+    print(f"Общее время поиска:  {math.ceil(finish_time)} сек")
 
     # sys.exit() 
     try:
-        wait_time = kline_waiter(my_params.kline_time, my_params.time_frame)
+        wait_time = kline_waiter(my_params.KLINE_TIME, my_params.TIME_FRAME)
         print(f"waiting time to close last candle is: {wait_time} sec")
         # await asyncio.sleep(wait_time)
     except Exception as ex:
@@ -170,10 +178,11 @@ async def main():
     while True:
         try:
             # await asyncio.sleep(2)
-            if len(total_raport_list) >= 4:
+            if len(total_raport_list) >= 1:
                 print('it is time to assuming!')  
                 asum_counter(total_raport_list)
-                create_orders_obj.cancel_all_orderss()
+                # create_orders_obj.cancel_all_orderss()
+                # create_orders_obj.calcel_all_futures_positions()
                 cleanup_cache()
                 break
 
@@ -196,18 +205,18 @@ async def main():
                 print(f"192___{ex}") 
             try:
                 if len(usual_defender_stake) == 0:
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(15)
                     continue
                 else:
                     if first_flag:                                            
-                        if len(usual_defender_stake) > my_params.max_threads:
-                            usual_defender_stake = usual_defender_stake[:my_params.max_threads]
+                        if len(usual_defender_stake) > my_params.DIVERCIFICATION_NUMDER:
+                            usual_defender_stake = usual_defender_stake[:my_params.DIVERCIFICATION_NUMDER]
                         universal_stake = stake_generator(usual_defender_stake)
                         main_stake = universal_stake
                         first_flag = False  
                     else:
                         try:
-                            decimal = my_params.max_threads - len(main_stake)
+                            decimal = my_params.DIVERCIFICATION_NUMDER - len(main_stake)
                             if len(usual_defender_stake) > decimal:
                                 usual_defender_stake = usual_defender_stake[:decimal]
                             universal_stake = stake_generator(usual_defender_stake)
@@ -215,8 +224,8 @@ async def main():
                         except Exception as ex:
                             print(f"212___{ex}") 
             except Exception as ex:
-                print(f"214___{ex}") 
-              
+                print(f"214___{ex}")
+                             
             # ///////////////////////////////////////////////////////////////////////
             try:
                 # print(main_stake)
@@ -227,6 +236,8 @@ async def main():
                     total_raport_list += intermedeate_raport_list
                     main_stake = [x for x in main_stake if not x["close_order"]]
                     main_stake_symbols_list = [x['symbol'] for x in main_stake]
+                if len(main_stake):
+                    sys.exit()
                     # print(total_raport_list)
                 # break
             except Exception as ex:
@@ -240,12 +251,14 @@ async def main():
     print("There was a good!")
 
 if __name__ == "__main__":
+    import time
+    start_time = time.time()  
     # try:
     #     atexit.register(cleanup_cache)
     # except Exception as ex:
     #     print(f"461____{ex}")
-    asyncio.run(main())
-    sys.exit()
+    asyncio.run(main(start_time))
+    # sys.exit()
 
 # killall -9 python
 # killall -r /path/to/.venv

@@ -11,8 +11,7 @@ def cleanup_cache():
 
         if os.path.exists(pycache_path):
             shutil.rmtree(pycache_path)
-            print(f"Удален кеш из {pycache_path}")
+            # print(f"Удален кеш из {pycache_path}")
 
 # cleanup_cache()
-
 # python -m UTILS.clean_cashe
