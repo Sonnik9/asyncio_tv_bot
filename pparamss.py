@@ -18,8 +18,8 @@ class Parameters:
         self.SL_STRATEGY_NUMBER = 2
         self.BUNCH_VARIANT = 1 
         
-        self.SLICE_VOLUME_PAIRS = 40
-        self.SLICE_CHANGINGPRICES_PAIRS = 30
+        self.SLICE_VOLUME_PAIRS = 100
+        self.SLICE_CHANGINGPRICES_PAIRS = 80
 
         if not self.TEST_FLAG:
             if self.MARKET == 'spot':                

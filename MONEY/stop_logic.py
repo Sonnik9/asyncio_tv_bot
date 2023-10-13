@@ -17,19 +17,16 @@ class SL_STRATEGYY():
         for item in main_stake:
             profit = None  
             open_order = None   
-            close_order = None  
+            close_order = None 
+            is_closing = 1 
             qnt = None
+            qnt_exit = None
         
             try:
                 enter_price = item['enter_price']
-                if enter_price < 1.1:
-                    main_stake.remove(item)
-                    break
                 current_price = item['current_price']
                 symbol = item["symbol"]
-                defender = item['defender'] 
-                atr = item['atr']
-                qnt, _= calc_qnt_func(symbol, enter_price, my_params.DEPO)   
+                qnt = calc_qnt_func(symbol, enter_price, my_params.DEPO, qnt_exit, is_closing)   
                 item['qnt'] = qnt       
                 target_point_level = item["target_point_level"]
             except Exception as ex:
@@ -38,31 +35,47 @@ class SL_STRATEGYY():
 
             if item['in_position'] == False:
                 try:
-                    if qnt:
-                        is_closing = 1
-                        open_order = create_orders_obj.make_order(item, qnt, is_closing)
+                    if qnt:                        
+                        open_order = create_orders_obj.make_order(item, is_closing)
                         print(open_order)
-                        enter_price = open_order['price']
                         # print(open_order)
                 except Exception as ex:           
                     print(f"MONEY/stop_logic_1.py_str41:___{ex}")
-                if not open_order:
-                    main_stake.remove(item)
-                    break
-                else:
+                if open_order and 'status' in open_order and open_order['status'] == 'NEW':
                     item['in_position'] = True
+                else:
+                    main_stake.remove(item)
+                    break                    
 
             if item['in_position'] == True:
                 if my_params.SL_STRATEGY_NUMBER == 2:
-                    profit, target_point_level = self.sl_strategy_two(defender, enter_price, current_price, atr, qnt, target_point_level)
+                    profit, target_point_level = self.sl_strategy_two(item, target_point_level)
                     item['profit'] = profit
                     
                     if profit: 
                         try:
                             is_closing = -1
-                            qnt = item['qnt']
-                            close_order = create_orders_obj.make_order(item, qnt, is_closing)
-                            if close_order:
+                            try:
+                                close_profit = abs(current_price - enter_price) * item['qnt']
+                                qnt_exit = close_profit / abs(current_price - enter_price)
+                                try:
+                                    qnt_exit = calc_qnt_func(symbol, enter_price, my_params.DEPO, qnt_exit, is_closing)
+                                except:
+                                    qnt_exit = None
+
+                                item['qnt_exit'] = qnt_exit
+                            except:
+                                pass
+
+                            if qnt_exit:
+                                try:
+                                    close_order = create_orders_obj.make_order(item, is_closing)
+                                    print(close_order)
+                                except Exception as ex:           
+                                    print(f"MONEY/stop_logic_1.py_str71:___{ex}")
+                            
+                            if close_order and 'status' in close_order and close_order['status'] == 'FILLED':
+
                                 item["target_point_level"] = target_point_level
                                 item['close_order'] = True  
                                 profit_flag = True  
@@ -78,12 +91,13 @@ class SL_STRATEGYY():
     def calculate_profit_part(self, defender, enter_price, current_price, atr, target_point_level):
         profit_flag = False
         target_point = None
-        print(f"target_point_level  {target_point_level}")
-        print(defender, enter_price, current_price, atr)
+        # print(f"target_point_level  {target_point_level}")
+
+        # print(defender, enter_price, current_price, atr)
 
         if defender == 1:
             target_point = enter_price + (target_point_level * atr*self.tp_art_multipler)
-            print(f"target_poin_{target_point}")
+            # print(f"target_poin_{target_point}")
             dinamic_sl = enter_price + ((target_point - enter_price)/2)
             
             if current_price >= target_point:
@@ -95,7 +109,7 @@ class SL_STRATEGYY():
 
         elif defender == -1:
             target_point = enter_price - (target_point_level * atr*self.tp_art_multipler)
-            print(f"target_poin_{target_point}")
+            # print(f"target_poin_{target_point}")
             dinamic_sl = enter_price - ((enter_price - target_point)/2)        
 
             if current_price <= target_point:                               
@@ -108,11 +122,11 @@ class SL_STRATEGYY():
 
         return profit_flag, target_point_level
 
-    def sl_strategy_two(self, defender, enter_price, current_price, atr, qnt, target_point_level):
+    def sl_strategy_two(self, item, target_point_level):
         profit = None
-        static_sl, profit_flag = None, False
+        static_sl, profit_flag = None, False        
         
-        # print(defender, enter_price, current_price, atr, qnt)
+        defender, enter_price, current_price, atr, qnt = item["defender"], item["enter_price"], item["current_price"], item["atr"], item["qnt"]
 
         profit_flag, target_point_level = self.calculate_profit_part(defender, enter_price, current_price, atr, target_point_level)
 
@@ -129,5 +143,4 @@ class SL_STRATEGYY():
 
         return profit, target_point_level
 
-
-sl_strategies = SL_STRATEGYY(my_params.SL_STRATEGY_NUMBER, my_params.DEPO)
+sl_strategies = SL_STRATEGYY()

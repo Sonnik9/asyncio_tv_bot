@@ -7,13 +7,18 @@ class CREATE_BINANCE_ORDER(Configg):
     def __init__(self) -> None:
         super().__init__()
 
-    def make_order(self, item, qnt, is_closing):
+    def make_order(self, item, is_closing):
+        # ['LIMIT', 'MARKET', 'STOP', 'STOP_MARKET', 'TAKE_PROFIT', 'TAKE_PROFIT_MARKET', 'TRAILING_STOP_MARKET']
 
         response = None
         url = my_params.URL_PATTERN_DICT['create_order_url']
         method = 'POST'
         typee = 'MARKET'
-        symbol = item["symbol"]       
+        symbol = item["symbol"] 
+        if is_closing == -1:
+            qnt = item['qnt_exit']  
+        else: 
+            qnt = item['qnt']   
 
         if item["defender"] == 1*is_closing:
             side = 'BUY'
@@ -31,7 +36,7 @@ class CREATE_BINANCE_ORDER(Configg):
         return response
     
     def cancel_all_orders(self):
-        
+
         response = None
         method = 'DELETE'
         req_url = my_params.URL_PATTERN_DICT['cancel_all_orders_url']

@@ -16,71 +16,50 @@ def get_symbol_info(symbol):
     try:
         response = requests.get(url)
         data = response.json() 
+        print(data[0])
     except Exception as ex:
         logging.error(f"An error occurred in file '{current_file}', line {inspect.currentframe().f_lineno}: {ex}")   
 
     return data
 
-def calc_qnt_func(symbol, enter_price, depo):    
+def calc_qnt_func(symbol, price, depo, qnt_exit, is_closing): 
 
     symbol_info = None
     symbol_data = None 
-    quantity = None 
-
+    quantity = None
     symbol_info = get_symbol_info(symbol)
-
+    print(symbol_info)
     if symbol_info:
         symbol_data = next((item for item in symbol_info["symbols"] if item['symbol'] == symbol), None)
 
-    if symbol_data:    
+    if symbol_data:
         step_size = float(symbol_data['filters'][1]['stepSize'])
         if my_params.MARKET == 'spot':
             min_notional = float(symbol_data['filters'][6]['minNotional'])
-        else:
+        elif my_params.MARKET == 'futures':
             min_notional = float(symbol_data['filters'][5]['notional'])
 
-        for _ in range(5):
-            quantity = depo / enter_price    
-            quantity = round(quantity / step_size) * step_size
-            if quantity * enter_price < min_notional:                 
-                depo = depo + depo * 0.2  
-                quantity = None   
-                continue
-            else:                
-                # recalculated_depo = quantity * enter_price
-                break
+        # price_precision = abs(int(math.log10(step_size)))
+        quantity_precision = abs(int(math.log10(1 / min_notional)))
 
+        if is_closing == 1:
+            for _ in range(5):
+                quantity = depo / price  
+                try:  
+                    quantity = round((round(quantity / step_size, quantity_precision) * step_size), quantity_precision)
+                except:
+                    ('her ai am')
+
+                if quantity * price < min_notional:                 
+                    depo = depo + depo * 0.2  
+                    quantity = None   
+                    continue
+                else:               
+                    break
+        else:
+            quantity = round((round(qnt_exit / step_size, quantity_precision) * step_size), quantity_precision)
+
+            if quantity * price < min_notional:
+                quantity = None
+    print(quantity)
     return quantity
-
-
-
-# def calc_qnt_func(symbol, enter_price, depo):    
-#     symbol_info = None
-#     symbol_data = None 
-#     quantity, recalculated_depo = None, None
-#     symbol_info = get_symbol_info(my_params.market, symbol)
-#     if symbol_info:
-#         symbol_data = next((item for item in symbol_info["symbols"] if item['symbol'] == symbol), None)
-
-#     if symbol_data:
-#         step_size = float(symbol_data['filters'][1]['stepSize'])
-#         if my_params.market == 'spot':
-#             min_notional = float(symbol_data['filters'][6]['minNotional'])
-#         elif my_params.market == 'futures':
-#             min_notional = float(symbol_data['filters'][5]['notional'])
-
-#         price_precision = abs(int(math.log10(step_size)))
-#         quantity_precision = abs(int(math.log10(1 / min_notional)))
-
-#         for _ in range(4):            
-#             quantity = depo / enter_price    
-#             quantity = round(quantity / step_size, quantity_precision) * step_size
-#             if quantity * enter_price < min_notional:                 
-#                 depo = depo + depo * 0.2  
-#                 quantity = None   
-#                 continue
-#             else:                
-#                 recalculated_depo = quantity * enter_price
-#                 break
-
-#     return quantity, recalculated_depo

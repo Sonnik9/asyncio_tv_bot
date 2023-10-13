@@ -86,6 +86,7 @@ async def price_monitoring(main_stake, data_callback):
                                     if len(main_stake_var) == 0:
                                         await ws.close()
                                         print('Something not very good..')
+                                        return
                                         # sys.exit()
                                     if profit_flag:                               
                                         return 
@@ -138,6 +139,7 @@ def stake_generator(usual_defender_stake):
             "in_position": False,
             "close_order": False,
             "qnt": None,
+            "qnt_exit": None,
             "atr": atr,
             # "atr_a": atr_a
         }
@@ -161,11 +163,11 @@ async def main(start_time):
     except Exception as ex:
         print(f"main__15:\n{ex}")    
     print(len(top_coins)) 
-    print(top_coins) 
+    # print(top_coins) 
     # top_coins = [x.replace('USDT', '') for x in top_coins]
     # print(top_coins)
-    finish_time = time.time() - start_time    
-    print(f"Общее время поиска:  {math.ceil(finish_time)} сек")
+    # finish_time = time.time() - start_time    
+    # print(f"Общее время поиска:  {math.ceil(finish_time)} сек")
 
     # sys.exit() 
     try:
@@ -191,9 +193,10 @@ async def main(start_time):
             now_in_desired_timezone = now.astimezone(desired_timezone)
             current_time = now_in_desired_timezone.strftime('%H:%M')
             print(current_time)
-            if time(21, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(23, 0):
-                print('it is time to assuming!')                
-                asum_counter(total_raport_list)
+            if time(0, 0) <= time(int(current_time.split(':')[0]), int(current_time.split(':')[1])) <= time(1, 0):
+                print('it is time to assuming!') 
+                if len(total_raport_list) >= 1:               
+                    asum_counter(total_raport_list)
                 break
 
             try:
@@ -236,7 +239,7 @@ async def main(start_time):
                     total_raport_list += intermedeate_raport_list
                     main_stake = [x for x in main_stake if not x["close_order"]]
                     main_stake_symbols_list = [x['symbol'] for x in main_stake]
-                if len(main_stake):
+                if len(main_stake) == 0:
                     sys.exit()
                     # print(total_raport_list)
                 # break
@@ -251,8 +254,9 @@ async def main(start_time):
     print("There was a good!")
 
 if __name__ == "__main__":
-    import time
-    start_time = time.time()  
+    start_time = None
+    # import time
+    # start_time = time.time()  
     # try:
     #     atexit.register(cleanup_cache)
     # except Exception as ex:

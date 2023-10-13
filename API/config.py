@@ -29,18 +29,23 @@ class Configg():
     
     def HTTP_request(self, url, **kwards):
 
-        responce = None
+        response = None
 
         for _ in range(2):
             try:
-                responce = requests.request(url=url, **kwards)
-                responce = responce.json()  
+                response = requests.request(url=url, **kwards)
+                response = response.json()
+                # if response.status_code == 200:
+                #     response = response.json()  
+                #     break
+                # else:
+                #     response = None
                 break
             except Exception as ex:
                 time.sleep(2)
                 print(f"Config_41str:  {ex}") 
                 continue
 
-        return responce
+        return response
 
 # python -m API.config

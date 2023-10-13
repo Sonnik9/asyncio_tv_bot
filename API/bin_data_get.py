@@ -15,11 +15,12 @@ class GET_BINANCE_DATA(Configg):
         sorted_by_changing_price_data = []
 
         response = requests.get(url)
-        
+
         if response.status_code == 200:
             all_tickers = response.json()
             # print(len(all_tickers))
-            usdt_filtered = [ticker for ticker in all_tickers if ticker['symbol'].upper().endswith('USDT') and 'UP' not in ticker['symbol'].upper() and 'DOWN' not in ticker['symbol'].upper() and 'RUB' not in ticker['symbol'].upper() and 'EUR' not in ticker['symbol'].upper()]
+            # print(all_tickers[0]['lastPrice'])
+            usdt_filtered = [ticker for ticker in all_tickers if ticker['symbol'].upper().endswith('USDT') and 'UP' not in ticker['symbol'].upper() and 'DOWN' not in ticker['symbol'].upper() and 'RUB' not in ticker['symbol'].upper() and 'EUR' not in ticker['symbol'].upper() and float(ticker['lastPrice']) >= 1.0]
             
             sorted_by_volume_data = sorted(usdt_filtered, key=lambda x: float(x['quoteVolume']), reverse=True)
 

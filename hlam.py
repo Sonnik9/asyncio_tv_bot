@@ -2085,3 +2085,38 @@
         #         url = "https://testnet.binance.com/v3/ticker/24hr"
         #     else:
         #         url = "https://testnet.binancefuture.com/fapi/v1/ticker/24hr"
+
+# def calc_qnt_func(symbol, price, depo, qnt_exit, is_closing):    
+
+#     symbol_info = None
+#     symbol_data = None 
+#     quantity = None 
+
+#     symbol_info = get_symbol_info(symbol)
+
+#     if symbol_info:
+#         symbol_data = next((item for item in symbol_info["symbols"] if item['symbol'] == symbol), None)
+
+#     if symbol_data:    
+#         step_size = float(symbol_data['filters'][1]['stepSize'])
+#         if my_params.MARKET == 'spot':
+#             min_notional = float(symbol_data['filters'][6]['minNotional'])
+#         else:
+#             min_notional = float(symbol_data['filters'][5]['notional'])
+#         if is_closing == 1:
+#             for _ in range(5):
+#                 quantity = depo / price    
+#                 quantity = round(quantity / step_size) * step_size
+#                 if quantity * price < min_notional:                 
+#                     depo = depo + depo * 0.2  
+#                     quantity = None   
+#                     continue
+#                 else:                
+#                     # recalculated_depo = quantity * price
+#                     break
+#         else:
+#             quantity = round(qnt_exit / step_size) * step_size
+#             if quantity * price < min_notional:
+#                 quantity = None
+
+#     return quantity
