@@ -370,5 +370,95 @@ from API.config import Configg
 # timeInForce = None
 # market_order(symbol, side, typeee, price, qnt, timeInForce)
 
+# import requests
+# import time
+# import hmac
+# import hashlib
+
+# # Замените на свои данные
+# api_key = 'YOUR_API_KEY'
+# api_secret = 'YOUR_API_SECRET'
+# base_url = 'https://testnet.binancefuture.com'
+
+# # Функция для создания сигнатуры
+# def generate_signature(query_string):
+#     return hmac.new(api_secret.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
+
+# # Получение временной метки
+# current_time = int(time.time() * 1000)
+
+# # Создание запроса для получения списка всех открытых ордеров
+# open_orders_url = f"{base_url}/fapi/v1/allOpenOrders"
+# query_string = f"timestamp={current_time}"
+# signature = generate_signature(query_string)
+# query_string += f"&signature={signature}"
+# headers = {
+#     'X-MBX-APIKEY': api_key,
+# }
+# response = requests.get(open_orders_url, headers=headers, params=query_string)
+# open_orders = response.json()
+
+# # Получение информации о позициях
+# positions_url = f"{base_url}/fapi/v1/positionRisk"
+# query_string = f"timestamp={current_time}"
+# signature = generate_signature(query_string)
+# query_string += f"&signature={signature}"
+# response = requests.get(positions_url, headers=headers, params=query_string)
+# positions = response.json()
 
 
+import requests
+import hashlib
+import hmac
+import time
+
+# Замените на свои данные
+api_key = '96f214ce691b0dd8fc65b23002ee4e5ce0b55684598645c2eb2d0a819a6d387a'
+api_secret = '46e1372c84151cd7d486a4734cc21023ba1724d067b5967ce48ce769025cf0d2'
+base_url = 'https://testnet.binancefuture.com'  # Используйте нужный URL
+
+# Получение временной метки
+timestamp = int(time.time() * 1000)
+
+# Создание подписи
+signature = hmac.new(api_secret.encode('utf-8'), f"timestamp={timestamp}".encode('utf-8'), hashlib.sha256).hexdigest()
+
+# Получение всех позиций
+headers = {
+    'X-MBX-APIKEY': api_key
+}
+params = {
+    'timestamp': timestamp,
+    'signature': signature
+}
+positions_url = f"{base_url}/fapi/v2/positionRisk"
+response = requests.get(positions_url, headers=headers, params=params)
+positions = response.json()
+# positions = positions
+# print(positions)
+
+
+# Закрытие всех позиций
+for position in positions:
+    if position['symbol'] == 'ATOMUSDT':
+        print(position)
+        if float(position['positionAmt']) != 0:
+            symbol = position['symbol']
+            position_side = position['positionSide']  # Определение направления позиции
+            if position_side == "LONG":
+                order_side = "SELL"  # Для LONG-позиции продаем
+            else:
+                order_side = "BUY"  # Для SHORT-позиции покупаем
+            # Создание рыночного ордера
+            order_params = {
+                'symbol': symbol,
+                'side': order_side,
+                'type': 'MARKET',
+                'quantity': abs(float(position['positionAmt']))
+            }
+            order_url = f"{base_url}/fapi/v1/order"
+            response = requests.post(order_url, headers=headers, params=params, json=order_params)
+            print(response)
+            # print(f"Ликвидирована позиция: {symbol}")
+
+    # print("Все открытые позиции закрыты.")

@@ -2120,3 +2120,72 @@
 #                 quantity = None
 
 #     return quantity
+
+    # def make_order(self, item, is_closing):
+    #     # ['LIMIT', 'MARKET', 'STOP', 'STOP_MARKET', 'TAKE_PROFIT', 'TAKE_PROFIT_MARKET', 'TRAILING_STOP_MARKET']
+
+    #     response = None
+    #     url = my_params.URL_PATTERN_DICT['create_order_url']
+    #     params = {}
+    #     method = 'POST'
+    #     typee = 'MARKET'
+    #     symbol = item["symbol"] 
+    #     # params["symbol"] = item["symbol"] 
+    #     # params["type"] = 'MARKET'
+    #     if is_closing == -1:
+    #         qnt = item['qnt_exit']  
+    #     else: 
+    #         qnt = item['qnt']  
+    #     # params["quantity"] = qnt 
+
+    #     if item["defender"] == 1*is_closing:
+    #         side = 'BUY'
+    #     elif item["defender"] == -1*is_closing:
+    #         side = "SELL" 
+    #     # params["side"] = side 
+
+    #     current_time = int(time.time() * 1000)
+    #     query_string = f"symbol={symbol}&side={side}&type={typee}&quantity={qnt}&timestamp={current_time}"
+    #     sing = self.get_signature(query_string)
+    #     query_string += f"&signature={sing}"
+    #     req_url = url + '?' + query_string
+
+    #     response = self.HTTP_request(req_url, method=method, headers=self.header)
+        
+    #     return response
+
+    # def get_signature(self, query_string):
+    #     return hmac.new(self.api_secret.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
+
+
+   
+    # def close_all_position(self):
+    #     url = my_params.URL_PATTERN_DICT['positions_url']
+    #     all_pos = None
+    #     close_position = None
+    #     params = {}
+    #     method = 'GET'       
+    #     params = self.get_signature(params)
+    #     all_pos = self.HTTP_request(url, method=method, headers=self.header, params=params)
+
+    #     for position in all_pos:
+    #         order_params = {}
+    #         method = 'POST'
+    #         order_url = my_params.URL_PATTERN_DICT['create_order_url']
+    #         if position['symbol'] == 'ATOMUSDT':
+    #             print(position)
+    #             # return
+    #             if float(position['positionAmt']) != 0:
+    #                 symbol = position['symbol']
+    #                 # abs(float(position['positionAmt']))
+    #                 print(abs(float(position['positionAmt'])))
+    #                 order_params = {
+    #                     'symbol': symbol,
+    #                     'side': 'BUY',
+    #                     'type': 'MARKET',
+    #                     'quantity': 48.00
+    #                 }
+    #                 order_params = self.get_signature(order_params)
+    #                 close_position = self.HTTP_request(order_url, method=method, headers=self.header, params=order_params)
+    #                 print(close_position)
+    #     return
