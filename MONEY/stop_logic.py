@@ -20,20 +20,19 @@ class SL_STRATEGYY():
             close_order = None 
             is_closing = 1 
             qnt = None
-            qnt_exit = None
-        
+                    
             try:
                 enter_price = item['enter_price']
                 current_price = item['current_price']
                 symbol = item["symbol"]
-                qnt = calc_qnt_func(symbol, enter_price, my_params.DEPO, qnt_exit, is_closing)   
-                item['qnt'] = qnt       
-                target_point_level = item["target_point_level"]
             except Exception as ex:
                 print(f"MONEY/stop_logic_1.py_str36:___{ex}")      
                 continue
 
             if item['in_position'] == False:
+                qnt = calc_qnt_func(symbol, enter_price, my_params.DEPO)   
+                item['qnt'] = qnt       
+                target_point_level = item["target_point_level"]
                 try:
                     if qnt:                        
                         open_order = create_orders_obj.make_order(item, is_closing)
@@ -54,25 +53,11 @@ class SL_STRATEGYY():
                     
                     if profit: 
                         try:
-                            is_closing = -1
                             try:
-                                close_profit = abs(current_price - enter_price) * item['qnt']
-                                qnt_exit = close_profit / abs(current_price - enter_price)
-                                try:
-                                    qnt_exit = calc_qnt_func(symbol, enter_price, my_params.DEPO, qnt_exit, is_closing)
-                                except:
-                                    qnt_exit = None
-
-                                item['qnt_exit'] = qnt_exit
-                            except:
-                                pass
-
-                            if qnt_exit:
-                                try:
-                                    close_order = create_orders_obj.make_order(item, is_closing)
-                                    print(close_order)
-                                except Exception as ex:           
-                                    print(f"MONEY/stop_logic_1.py_str71:___{ex}")
+                                close_order = create_orders_obj.make_order(item, is_closing)
+                                print(close_order)
+                            except Exception as ex:           
+                                print(f"MONEY/stop_logic_1.py_str71:___{ex}")
                             
                             if close_order and 'status' in close_order and close_order['status'] == 'FILLED':
 
@@ -91,9 +76,6 @@ class SL_STRATEGYY():
     def calculate_profit_part(self, defender, enter_price, current_price, atr, target_point_level):
         profit_flag = False
         target_point = None
-        # print(f"target_point_level  {target_point_level}")
-
-        # print(defender, enter_price, current_price, atr)
 
         if defender == 1:
             target_point = enter_price + (target_point_level * atr*self.tp_art_multipler)

@@ -16,13 +16,13 @@ def get_symbol_info(symbol):
     try:
         response = requests.get(url)
         data = response.json() 
-        # print(data[0])
+        
     except Exception as ex:
         logging.error(f"An error occurred in file '{current_file}', line {inspect.currentframe().f_lineno}: {ex}")   
 
     return data
 
-def calc_qnt_func(symbol, price, depo, qnt_exit, is_closing): 
+def calc_qnt_func(symbol, price, depo): 
 
     symbol_info = None
     symbol_data = None 
@@ -43,24 +43,19 @@ def calc_qnt_func(symbol, price, depo, qnt_exit, is_closing):
         quantity_precision = abs(int(math.log10(1 / min_notional)))
 
         decimal = depo * 0.2
-        if is_closing == 1:
-            for _ in range(5):
-                quantity = depo / price  
-                try:  
-                    quantity = round((round(quantity / step_size, quantity_precision) * step_size), quantity_precision)
-                except:
-                    ('her ai am')
 
-                if quantity * price < min_notional:                 
-                    depo = depo + decimal  
-                    quantity = None   
-                    continue
-                else:               
-                    break
-        else:
-            quantity = round((round(qnt_exit / step_size, quantity_precision) * step_size), quantity_precision)
+        for _ in range(5):
+            quantity = depo / price  
+            try:  
+                quantity = round((round(quantity / step_size, quantity_precision) * step_size), quantity_precision)
+            except:
+                ('her ai am')
 
-            if quantity * price < min_notional:
-                quantity = None
+            if quantity * price < min_notional:                 
+                depo = depo + decimal  
+                quantity = None   
+                continue
+            else:               
+                break
     # print(quantity)
     return quantity

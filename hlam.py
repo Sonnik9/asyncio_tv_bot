@@ -2189,3 +2189,19 @@
     #                 close_position = self.HTTP_request(order_url, method=method, headers=self.header, params=order_params)
     #                 print(close_position)
     #     return
+
+
+                            # is_closing = -1
+                            # try:
+                            #     close_profit = abs(current_price - enter_price) * item['qnt']
+                            #     qnt_exit = close_profit / abs(current_price - enter_price)
+                            #     try:
+                            #         qnt_exit = calc_qnt_func(symbol, enter_price, my_params.DEPO, qnt_exit, is_closing)
+                            #     except:
+                            #         qnt_exit = None
+
+                            #     item['qnt_exit'] = qnt_exit
+                            # except:
+                            #     pass
+
+                            # if qnt_exit:
